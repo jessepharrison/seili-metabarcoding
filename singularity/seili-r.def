@@ -1,0 +1,98 @@
+Bootstrap: docker
+From: ubuntu:18.04
+
+%labels
+Author Jesse Harrison <jesse.harrison@csc.fi>
+
+%environment
+
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+    export TZ=Europe/Helsinki
+    export R_LIBS_USER=/usr/lib/R/library
+
+%post
+    
+    # set build date
+    export BUILD_DATE=2020-03-17
+
+    # Stop installation prompts and unset TMPDIR
+    export DEBIAN_FRONTEND=noninteractive
+    unset TMPDIR
+
+    # Libraries for R + RStudio basic installation
+    apt-get -y update
+    apt-get -y install gnupg software-properties-common tzdata \
+                       gdebi-core libasound2 libnss3 libegl1-mesa libxkbcommon-x11-0 libgl1-mesa-glx libxtst6 wget
+
+    # Further libraries
+    apt-get update
+    apt-get -y install libcurl4-openssl-dev libssl-dev libssh2-1-dev libxml2-dev libgsl-dev libhdf5-dev libpq-dev \
+ 		       xorg libx11-dev libglu1-mesa-dev libfreetype6-dev tk8.6-dev default-jre default-jdk \
+                       libudunits2-dev libopenmpi-dev openmpi-bin openmpi-common openmpi-doc openssh-client \
+	  	       openssh-server libssh-dev libgmp-dev libmpfr-dev libmagick++-dev libnetcdf-dev \
+                       libpoppler-cpp-dev jags libgdal-dev libproj-dev libwxgtk3.0-dev libexpat1-dev wx-common \
+                       libogdi3.2-dev unixodbc-dev git dh-autoreconf libfftw3-3
+
+    # Intel MKL 2019.0.4
+
+    wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
+    apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
+    sh -c 'echo deb https://apt.repos.intel.com/mkl all main > /etc/apt/sources.list.d/intel-mkl.list'
+
+    apt-get -y update
+    apt-get -y install intel-mkl-64bit-2019.4-070
+
+    update-alternatives --install /usr/lib/x86_64-linux-gnu/libblas.so     \
+   	libblas.so-x86_64-linux-gnu      /opt/intel/mkl/lib/intel64/libmkl_rt.so 50
+    update-alternatives --install /usr/lib/x86_64-linux-gnu/libblas.so.3   \
+	libblas.so.3-x86_64-linux-gnu    /opt/intel/mkl/lib/intel64/libmkl_rt.so 50
+    update-alternatives --install /usr/lib/x86_64-linux-gnu/liblapack.so   \
+	liblapack.so-x86_64-linux-gnu    /opt/intel/mkl/lib/intel64/libmkl_rt.so 50
+    update-alternatives --install /usr/lib/x86_64-linux-gnu/liblapack.so.3 \
+	liblapack.so.3-x86_64-linux-gnu  /opt/intel/mkl/lib/intel64/libmkl_rt.so 50
+
+    echo "/opt/intel/lib/intel64"     >  /etc/ld.so.conf.d/mkl.conf
+    echo "/opt/intel/mkl/lib/intel64" >> /etc/ld.so.conf.d/mkl.conf
+    ldconfig
+
+    echo "MKL_THREADING_LAYER=GNU" >> /etc/environment
+
+    # R 3.6.3
+
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+    add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/'
+    apt-get -y install r-base r-base-dev
+    R CMD javareconf
+
+    # RStudio 1.2.5033
+
+    wget https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.2.5033-amd64.deb
+    gdebi -n rstudio-1.2.5033-amd64.deb
+
+    # Set date-locked MRAN snapshot of CRAN
+
+    if [ -z "$BUILD_DATE" ]; then MRAN=$CRAN; \
+    else MRAN=https://mran.microsoft.com/snapshot/${BUILD_DATE}; fi
+    echo MRAN=$MRAN >> /etc/environment
+    echo "options(repos = c(CRAN='$MRAN'), download.file.method = 'libcurl')" >> /usr/lib/R/etc/Rprofile.site
+
+    # CRAN packages
+    R --slave -e 'install.packages("devtools",repos = "https://cran.rstudio.com/")'
+    R --slave -e 'install.packages("tidyverse",repos = "https://cran.rstudio.com/")'
+    R --slave -e 'install.packages("vegan",repos = "https://cran.rstudio.com/")'
+    R --slave -e 'install.packages("grid",repos = "https://cran.rstudio.com/")'
+    R --slave -e 'install.packages("gridExtra",repos = "https://cran.rstudio.com/")'
+    R --slave -e 'install.packages("data.table",repos = "https://cran.rstudio.com/")'
+    R --slave -e 'install.packages("cowplot",repos = "https://cran.rstudio.com/")'
+    R --slave -e 'install.packages("RVAideMemoire",repos = "https://cran.rstudio.com/")'
+    R --slave -e 'install.packages("RColorBrewer",repos = "https://cran.rstudio.com/")'
+    R --slave -e 'install.packages("Cairo",repos = "https://cran.rstudio.com/")'
+    R --slave -e 'install.packages("multcompView",repos = "https://cran.rstudio.com/")'
+    R --slave -e 'install.packages("indicspecies",repos = "https://cran.rstudio.com/")'
+
+    # Bioconductor + Bioc packages
+    R --slave -e 'if (!requireNamespace("BiocManager",quietly = TRUE)) install.packages("BiocManager")'
+    R --slave -e 'BiocManager::install()'
+    R --slave -e 'BiocManager::install("phyloseq",ask = FALSE)'
+    R --slave -e 'BiocManager::install("microbiome",ask = FALSE)'
