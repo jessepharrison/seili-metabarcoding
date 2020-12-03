@@ -14,36 +14,38 @@ lapply(packages, require, character.only = TRUE)
 
 # sessioninfo ####
 
-sessionInfo()
-
-# R version 3.6.3 (2020-02-29)
+# R version 4.0.2 (2020-06-22)
 # Platform: x86_64-pc-linux-gnu (64-bit)
-# Running under: Ubuntu 18.04.4 LTS
+# Running under: Ubuntu 18.04.5 LTS
 
 # Matrix products: default
-# BLAS/LAPACK: /opt/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64_lin/libmkl_rt.so
+# BLAS/LAPACK: /opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/lib/intel64_lin/libmkl_gf_lp64.so
 
 # locale:
-# [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8    LC_PAPER=C.UTF-8      
-# [8] LC_NAME=C              LC_ADDRESS=C           LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+#  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8   
+#  [6] LC_MESSAGES=C.UTF-8    LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C           LC_TELEPHONE=C        
+# [11] LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
 
 # attached base packages:
-# [1] grid      stats     graphics  grDevices utils     datasets  methods   base     
+#  [1] grid      stats     graphics  grDevices utils     datasets  methods   base     
 
 # other attached packages:
-# [1] multcompView_0.1-8   Cairo_1.5-12         RColorBrewer_1.1-2   knitr_1.28           microbiome_1.8.0     RVAideMemoire_0.9-75 cowplot_1.0.0       
-# [8] plyr_1.8.6           data.table_1.12.8    gridExtra_2.3        vegan_2.5-6          lattice_0.20-41      permute_0.9-5        ggplot2_3.3.0       
-# [15] phyloseq_1.30.0     
+#  [1] multcompView_0.1-8   Cairo_1.5-12.2       RColorBrewer_1.1-2   knitr_1.30           microbiome_1.12.0    RVAideMemoire_0.9-78
+#  [7] cowplot_1.1.0        plyr_1.8.6           data.table_1.13.2    gridExtra_2.3        vegan_2.5-7          lattice_0.20-41     
+# [13] permute_0.9-5        ggplot2_3.3.2        phyloseq_1.34.0     
 
-#loaded via a namespace (and not attached):
-# [1] xfun_0.14           tidyselect_1.1.0    reshape2_1.4.4      purrr_0.3.4         splines_3.6.3       rhdf5_2.30.1        colorspace_1.4-1    vctrs_0.3.0        
-# [9] stats4_3.6.3        mgcv_1.8-31         survival_3.1-12     rlang_0.4.6         pillar_1.4.4        glue_1.4.1          withr_2.2.0         BiocGenerics_0.32.0
-#[17] foreach_1.5.0       lifecycle_0.2.0     stringr_1.4.0       zlibbioc_1.32.0     Biostrings_2.54.0   munsell_0.5.0       gtable_0.3.0        codetools_0.2-16   
-#[25] Biobase_2.46.0      IRanges_2.20.2      biomformat_1.14.0   parallel_3.6.3      Rcpp_1.0.4.6        scales_1.1.1        S4Vectors_0.24.4    jsonlite_1.6.1     
-#[33] XVector_0.26.0      Rtsne_0.15          stringi_1.4.6       dplyr_0.8.5         ade4_1.7-15         tools_3.6.3         magrittr_1.5        tibble_3.0.1       
-#[41] cluster_2.1.0       tidyr_1.1.0         crayon_1.3.4        ape_5.3             pkgconfig_2.0.3     MASS_7.3-51.6       ellipsis_0.3.1      Matrix_1.2-18      
-#[49] assertthat_0.2.1    rstudioapi_0.11     iterators_1.0.12    Rhdf5lib_1.8.0      R6_2.4.1            multtest_2.42.0     igraph_1.2.5        nlme_3.1-148       
-#[57] compiler_3.6.3 
+# loaded via a namespace (and not attached):
+#  [1] Rcpp_1.0.5          ape_5.4-1           tidyr_1.1.2         prettyunits_1.1.1   Biostrings_2.58.0   digest_0.6.27      
+#  [7] foreach_1.5.1       R6_2.5.0            stats4_4.0.2        pillar_1.4.7        zlibbioc_1.36.0     rlang_0.4.9        
+# [13] progress_1.2.2      rstudioapi_0.13     S4Vectors_0.28.0    Matrix_1.2-18       labeling_0.4.2      splines_4.0.2      
+# [19] Rtsne_0.15          stringr_1.4.0       igraph_1.2.6        munsell_0.5.0       tinytex_0.27        compiler_4.0.2     
+# [25] xfun_0.19           pkgconfig_2.0.3     BiocGenerics_0.36.0 multtest_2.46.0     mgcv_1.8-33         biomformat_1.18.0  
+# [31] tidyselect_1.1.0    tibble_3.0.4        IRanges_2.24.0      codetools_0.2-18    crayon_1.3.4        dplyr_1.0.2        
+# [37] withr_2.3.0         MASS_7.3-53         rhdf5filters_1.2.0  nlme_3.1-150        jsonlite_1.7.1      gtable_0.3.0       
+# [43] lifecycle_0.2.0     magrittr_2.0.1      scales_1.1.1        stringi_1.5.3       farver_2.0.3        XVector_0.30.0     
+# [49] reshape2_1.4.4      ellipsis_0.3.1      generics_0.1.0      vctrs_0.3.5         Rhdf5lib_1.12.0     iterators_1.0.13   
+# [55] tools_4.0.2         ade4_1.7-16         Biobase_2.50.0      glue_1.4.2          purrr_0.3.4         hms_0.5.3          
+# [61] parallel_4.0.2      survival_3.2-7      colorspace_2.0-0    rhdf5_2.34.0        cluster_2.1.0
 
 # ggplot2 theme ####
 
