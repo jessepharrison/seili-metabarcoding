@@ -1,5 +1,5 @@
-# seili 16s analysis - jesse harrison 2020-2021
-# using seili-r.sif (based on seili-r.def)
+# Seili 16S analysis - jesse harrison 2020-2021
+# using seili-r Singularity container (based on seili-r.def)
 
 # additional libpath ####
 # (see extra_RPackages.R for extra package installs)
@@ -60,7 +60,7 @@ setwd("/home/jharriso/GitHub/seili-metabarcoding/")
 load("rdata/Seili16s.RData")
 # based on: import_biom("tables_sampledata_export.biom", treefilename="tree_rooted.tree", refseqfilename="otus.fasta")
 
-# rarefaction (non-rarefied) ####
+# rarefaction curve (without rarefying to even depth) ####
 
 Cairo(file = "figures/r_output/FigS1a_16S.png", 
       type = "png", 
@@ -81,13 +81,13 @@ rarecurve(t(otu_table(rawdata)),
 
 dev.off()
 
-# alpha diversity and evenness (non-rarefied) ####
+# alpha diversity and evenness (without rarefying to even depth) ####
 
 richness <- estimate_richness(rawdata, measures = c("Observed", "Chao1", "Shannon"))
 richness <- cbind(richness, rawdata@sam_data[,1:2]) # add replicate and site
 write.csv(richness, "tables/richness_rawdata_16S.csv")
 
-# alpha diversity and evenness (rarefied - for completeness, but don't write into csv) ####
+# alpha diversity and evenness (rarefied to even depth - for completeness, but not used) ####
 
 # set.seed(1)
 # alpharare <- rarefy_even_depth(rawdata)
@@ -257,118 +257,194 @@ rawdata.2 <- prune_taxa(keepTaxa.raw, rawdata.bac.0)
 
 # data transformation ####
 
-# Hellinger transformation for data using 5% prevalence filter (rawdata.2)
+# CLR transformation (microbiome package) for data using 5% prevalence filter (rawdata.2)
 
-rawdata.2.hellinger <- rawdata.2
-otu_table(rawdata.2.hellinger) <- otu_table(decostand(otu_table(rawdata.2.hellinger), 
-                                                     method = "hellinger"), taxa_are_rows = TRUE)
+rawdata.2.clr <- transform(rawdata.2, 'clr')
 
-rawdata.2.hellinger <- transform_sample_counts(rawdata.2, function(x) x/sum(x))
+# Hellinger transformation
+# (Included for completeness in case required, commented out)
 
-# stacked taxon composition plots ####
+# rawdata.2.hellinger <- rawdata.2
+# otu_table(rawdata.2.hellinger) <- otu_table(decostand(otu_table(rawdata.2.hellinger), 
+#                                                      method = "hellinger"), taxa_are_rows = TRUE)
+
+# % transformation (commented out)
+# rawdata.2.hellinger <- transform_sample_counts(rawdata.2, function(x) x/sum(x))
+
+# stacked taxon composition plots for %RA data (no CLR) ####
+
+# taxon composition plots showed as proportions (%) for readability
+# note: here not using CLR-transformed data
+
+# relative abundance conversion
+raw2.ra <- transform_sample_counts(rawdata.2, 
+                                   function(x) x/sum(x))
 
 # subset the data to phylum level (= rank2), cut out low-abundance taxa
-raw2.ra.phylum <- tax_glom(rawdata.2.hellinger, taxrank = rank_names(rawdata.2.hellinger)[2], NArm = T,
-                           bad_empty = c(NA,""," ","\t")) # filters out any junk (not necessarily required but keeping it there anyway)
+raw2.ra.phylum <- tax_glom(raw2.ra, 
+                           taxrank = rank_names(raw2.ra)[2], 
+                           NArm = T,
+                           bad_empty = c(NA,""," ","\t"))
 
-raw2.ra.phylum <- psmelt(raw2.ra.phylum) # melt to long format (also converts to data frame)
-raw2.ra.phylum.02 <- subset(raw2.ra.phylum, Abundance > 0.02) # cut out OTUs less than 2%
-sum(raw2.ra.phylum.02$Abundance)/sum(raw2.ra.phylum$Abundance) # retains 88.7% of original data (UPDATE JUL 2020: 91.4%)
+# melt to long format (also converts to data frame)
+raw2.ra.phylum <- psmelt(raw2.ra.phylum)
 
-# choose a colour palette
-colours <- c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA", "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#117744",
-             "#44AA77", "#88CCAA", "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", "#DD7788",
-             "#CBD588")
+# cut out OTUs less than 2%
+raw2.ra.phylum.02 <- subset(raw2.ra.phylum, 
+                            Abundance > 0.02)
+
+# % retained after removing OTUs < 2%
+sum(raw2.ra.phylum.02$Abundance)/sum(raw2.ra.phylum$Abundance) # 91.4%
+
+# define colour palette
+colours <- c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA",
+             "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#117744",
+             "#44AA77", "#88CCAA", "#777711", "#AAAA44", "#DDDD77", 
+             "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", 
+             "#DD7788", "#CBD588")
 
 # phylum-level bar plot
-Cairo(file = "figures/r_output/Fig4a_16S.png", type = "png", units = "cm", width = 23, height = 20, pointsize = 14, dpi = 300, bg= "white")
+Cairo(file = "figures/r_output/Fig4a_16S.png", 
+      type = "png", 
+      units = "cm", 
+      width = 27, 
+      height = 20, 
+      pointsize = 14, 
+      dpi = 300, 
+      bg= "white")
 
-phylum.plot <- ggplot(raw2.ra.phylum.02 , aes(x = Replicate, y = Abundance, fill = Rank2)) + geom_bar(stat = "identity", position = "stack") +
+phylum.plot <- ggplot(raw2.ra.phylum.02 , 
+                      aes(x = Replicate, 
+                          y = Abundance, fill = Rank2)) + 
+  geom_bar(stat = "identity", position = "stack") +
   facet_wrap(~ Site) +
   scale_fill_manual(values = colours) +
   scale_y_continuous(name = "Relative abundance (taxa >2%)\n") +
-  theme(axis.text.y = element_text(size = 12, hjust = 0.5)) +
+  theme(axis.text.y = element_text(size = 12, 
+                                   hjust = 0.5)) +
   theme(axis.title.y = element_text(size = 14)) +
   theme(axis.title.x = element_blank()) +
-  theme(axis.text.x = element_text(size = 12, angle = 30, vjust = 0.5, hjust = 0.5)) +
+  theme(axis.text.x = element_text(size = 12, 
+                                   angle = 30, 
+                                   vjust = 0.5, 
+                                   hjust = 0.5)) +
   theme(axis.ticks.x = element_blank()) +
   theme(strip.text.x = element_text(size = 11)) +
   theme(legend.title = element_blank()) +
   theme(legend.position = "bottom") +
   theme(legend.text = element_text(size = 10))
-phylum.plot
 
+phylum.plot
 dev.off()
 
-# class level plot (= rank3) with 3% cut-off
-
-raw2.ra.class <- tax_glom(rawdata.2.hellinger, taxrank = rank_names(rawdata.2.hellinger)[3], NArm = T,
+# class level plot (= rank3)
+raw2.ra.class <- tax_glom(raw2.ra, 
+                          taxrank = rank_names(rawdata.2)[3], 
+                          NArm = T,
                           bad_empty = c(NA,""," ","\t"))
 
+# psmelt raw2.ra.class
 raw2.ra.class <- psmelt(raw2.ra.class)
-raw2.ra.class.03 <- subset(raw2.ra.class, Abundance > 0.03) # cut out OTUs less than 3%
-sum(raw2.ra.class.03$Abundance)/sum(raw2.ra.class$Abundance) # retains 65% of original data (UPDATE Jul 2020: 75%)
 
-Cairo(file = "figures/r_output/FigS6_16S.png", type = "png", units = "cm", width = 23, height = 20, pointsize = 14, dpi = 300, bg= "white")
+# cut out OTUs <3%
+raw2.ra.class.03 <- subset(raw2.ra.class, 
+                           Abundance > 0.03)
 
-class.plot.03 <- ggplot(raw2.ra.class.03, aes(x = Replicate, y = Abundance, fill = Rank3)) + geom_bar(stat = "identity", position = "stack") +
+# % remaining after removing OTUs <10%
+sum(raw2.ra.class.03$Abundance)/sum(raw2.ra.class$Abundance) # retains 75% of original data
+
+Cairo(file = "figures/r_output/FigS6_16S.png", 
+      type = "png", units = "cm", 
+      width = 27, 
+      height = 20, 
+      pointsize = 14, 
+      dpi = 300, 
+      bg= "white")
+
+class.plot <- ggplot(raw2.ra.class.03, 
+                        aes(x = Replicate, 
+                            y = Abundance, 
+                            fill = Rank3)) + 
+  geom_bar(stat = "identity", 
+           position = "stack") +
   facet_wrap(~ Site) +
   scale_fill_manual(values = colours) +
   scale_y_continuous(name = "Relative abundance (taxa >3%)\n") +
-  theme(axis.text.y = element_text(size = 12, hjust = 0.5)) +
+  theme(axis.text.y = element_text(size = 12, 
+                                   hjust = 0.5)) +
   theme(axis.title.y = element_text(size = 14)) +
   theme(axis.title.x = element_blank()) +
-  theme(axis.text.x = element_text(size = 12, angle = 30, vjust = 0.5, hjust = 0.5)) +
+  theme(axis.text.x = element_text(size = 12, 
+                                   angle = 30, 
+                                   vjust = 0.5, 
+                                   hjust = 0.5)) +
   theme(axis.ticks.x = element_blank()) +
   theme(strip.text.x = element_text(size = 11)) +
   theme(legend.title = element_blank()) +
   theme(legend.position = "bottom") +
   theme(legend.text = element_text(size = 10))
-class.plot.03
 
+class.plot
 dev.off()
 
-# nmds ####
+# nMDS for CLR-transformed data ####
 
 set.seed(1)
-rawdata.2.nmds <- ordinate(physeq = rawdata.2.hellinger, method = "NMDS", distance = "bray") 
-# stress = 0.03 (updated from 0.05)
+# using Aitchison distance (CLR + Euclidean distances)
+rawdata.2.nmds <- ordinate(physeq = rawdata.2.clr, 
+                           method = "NMDS", 
+                           distance = "euclidean") # stress = 0.04
 
-Cairo(file = "figures/r_output/Fig3a_16S.png", type = "png", units = "cm", width = 15, height = 15, pointsize = 14, dpi = 300, bg= "white")
+Cairo(file = "figures/r_output/Fig3a_16S.png", 
+      type = "png", 
+      units = "cm", 
+      width = 15, 
+      height = 15, 
+      pointsize = 14, 
+      dpi = 300, 
+      bg= "white")
 
-nMDS.plot.rawdata.2.hellinger <- plot_ordination(rawdata.2.hellinger, rawdata.2.nmds, color = "Site") + theme(aspect.ratio = 1)
-nMDS.plot.rawdata.2.hellinger <- nMDS.plot.rawdata.2.hellinger + geom_point(size = 6.5, alpha = 0.75)
-nMDS.plot.rawdata.2.hellinger <- nMDS.plot.rawdata.2.hellinger + scale_colour_brewer(type = "qual", palette = "Dark2")
-nMDS.plot.rawdata.2.hellinger <- nMDS.plot.rawdata.2.hellinger + theme(axis.title = element_blank())
-nMDS.plot.rawdata.2.hellinger <- nMDS.plot.rawdata.2.hellinger + theme(axis.ticks = element_blank())
-nMDS.plot.rawdata.2.hellinger <- nMDS.plot.rawdata.2.hellinger + theme(axis.text = element_blank())
-nMDS.plot.rawdata.2.hellinger <- nMDS.plot.rawdata.2.hellinger + theme(legend.title = element_blank())
-nMDS.plot.rawdata.2.hellinger <- nMDS.plot.rawdata.2.hellinger + theme(legend.position = "bottom")
-nMDS.plot.rawdata.2.hellinger
+nMDS.plot.rawdata.2.clr <- plot_ordination(rawdata.2.clr, 
+                                           rawdata.2.nmds, 
+                                           color = "Site") + 
+  theme(aspect.ratio = 1) + 
+  geom_point(size = 6.5, alpha = 0.75) + 
+  scale_colour_brewer(type = "qual", 
+                      palette = "Dark2") + 
+  theme(axis.title = element_blank()) + 
+  theme(axis.ticks = element_blank()) +
+  theme(axis.text = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = "bottom")
 
+nMDS.plot.rawdata.2.clr
 dev.off()
 
-# permanova (site) + posthoc tests ####
+# PERMANOVA (site) + posthoc tests ####
 
 # make a data frame from the sample_data
-rawdata.2.hellinger.df <- data.frame(sample_data(rawdata.2.hellinger))
+rawdata.2.clr.df <- data.frame(sample_data(rawdata.2.clr))
 
-# extract bray-curtis distances
+# extract Aitchison distances
 set.seed(1)
-rawdata.2.hellinger.bray <- phyloseq::distance(rawdata.2.hellinger, method = 'bray')
+rawdata.2.clr.euc <- phyloseq::distance(rawdata.2.clr, 
+                                        method = 'euclidean')
 
-# do the test
+# global PERMANOVA
 set.seed(1)
-adonis(rawdata.2.hellinger.bray ~ Site, data = rawdata.2.hellinger.df)
+adonis(rawdata.2.clr.euc ~ Site, 
+       data = rawdata.2.clr.df)
 
-# post-hoc pairwise comparison
+# post-hoc pairwise PERMANOVA
 set.seed(1)
-pairwise.perm.manova(rawdata.2.hellinger.bray, rawdata.2.hellinger.df$Site, nperm = 999, p.method = "BH")
+pairwise.perm.manova(rawdata.2.clr.euc, 
+                     rawdata.2.clr.df$Site, 
+                     nperm = 999, 
+                     p.method = "BH")
 
-# betadisper test
+# betadisper test (PERMDISP)
 set.seed(1)
-beta <- betadisper(rawdata.2.hellinger.bray, rawdata.2.hellinger.df$Site)
+beta <- betadisper(rawdata.2.clr.euc, 
+                   rawdata.2.clr.df$Site)
 set.seed(1)
 permutest(beta) # no significant dispersion effect for 16S
-
-
