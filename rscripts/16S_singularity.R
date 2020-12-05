@@ -420,7 +420,7 @@ nMDS.plot.rawdata.2.clr <- plot_ordination(rawdata.2.clr,
 nMDS.plot.rawdata.2.clr
 dev.off()
 
-# PERMANOVA (site) + posthoc tests ####
+# global + pairwise PERMANOVA (~ site) and PERMDISP ####
 
 # make a data frame from the sample_data
 rawdata.2.clr.df <- data.frame(sample_data(rawdata.2.clr))
@@ -430,21 +430,61 @@ set.seed(1)
 rawdata.2.clr.euc <- phyloseq::distance(rawdata.2.clr, 
                                         method = 'euclidean')
 
-# global PERMANOVA
+# global PERMANOVA (after setting seed = 1)
 set.seed(1)
-adonis(rawdata.2.clr.euc ~ Site, 
-       data = rawdata.2.clr.df)
+global.permanova <- adonis(rawdata.2.clr.euc ~ Site,
+                           data = rawdata.2.clr.df)
 
-# post-hoc pairwise PERMANOVA
+# save global PERMANOVA output
+
+cat(" ------------------------------------",
+    "\n", "16S - GLOBAL PERMANOVA", "\n",
+    "------------------------------------",
+    "\n",
+    file = "stats/permanova_permdisp_16S.txt")
+
+capture.output(global.permanova, 
+               file = "stats/permanova_permdisp_16S.txt",
+               append = TRUE)
+
+# post-hoc pairwise PERMANOVA (after setting seed = 1)
 set.seed(1)
-pairwise.perm.manova(rawdata.2.clr.euc, 
-                     rawdata.2.clr.df$Site, 
-                     nperm = 999, 
-                     p.method = "BH")
+pairwise.permanova <- pairwise.perm.manova(rawdata.2.clr.euc,
+                                           rawdata.2.clr.df$Site,
+                                           nperm = 999,
+                                           p.method = "BH")
 
-# betadisper test (PERMDISP)
+# save pairwise PERMANOVA output
+
+cat("\n",
+    "------------------------------------",
+    "\n", "16S - PAIRWISE PERMANOVA", "\n",
+    "------------------------------------",
+    "\n",
+    file = "stats/permanova_permdisp_16S.txt",
+    append = TRUE)
+
+capture.output(pairwise.permanova, 
+               file = "stats/permanova_permdisp_16S.txt", 
+               append = TRUE)
+
+# betadisper / PERMDISP (after setting seed = 1)
 set.seed(1)
 beta <- betadisper(rawdata.2.clr.euc, 
                    rawdata.2.clr.df$Site)
 set.seed(1)
-permutest(beta) # no significant dispersion effect for 16S
+permdisp <- permutest(beta)
+
+# save PERMDISP output
+
+cat("\n",
+    "------------------------------------",
+    "\n", "16S - PERMDISP", "\n",
+    "------------------------------------",
+    "\n",
+    file = "stats/permanova_permdisp_16S.txt",
+    append = TRUE)
+
+capture.output(permdisp, 
+               file = "stats/permanova_permdisp_16S.txt", 
+               append = TRUE)
