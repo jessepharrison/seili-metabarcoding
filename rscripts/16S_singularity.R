@@ -3,6 +3,7 @@
 
 # additional libpath ####
 # (see extra_RPackages.R for extra package installs)
+
 .libPaths(c("/home/jharriso/seili-singularity/rpackages", .libPaths()))
 
 # packages ####
@@ -488,3 +489,14 @@ cat("\n",
 capture.output(permdisp, 
                file = "stats/permanova_permdisp_16S.txt", 
                append = TRUE)
+
+# get CLR-transformed abundance matrix from phyloseq object ####
+
+# extract abundance matrix
+abundance.matrix <- as(otu_table(rawdata.2.clr), "matrix")
+
+# transpose abundance matrix and coerce to a data frame
+abundance.df <- as.data.frame(t(abundance.matrix))
+
+# create ordination
+# CCA.vegan <- cca(Abundance_df ~ Farm + CN_1cm + IntO2 + NH4_Inv + HS_Inv, data = Env.CCA)
