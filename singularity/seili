@@ -2,6 +2,7 @@
 
 unset XDG_RUNTIME_DIR
 
+# run rstudio
 singularity exec \
 -B /home/jharriso/git/seili-metabarcoding:/home/jharriso/git/seili-metabarcoding \
 -B /run:/run \
