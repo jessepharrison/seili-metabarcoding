@@ -9,7 +9,8 @@
 # packages ####
 
 packages <- c("phyloseq", "ggplot2", "vegan", "grid", "gridExtra", "data.table", "plyr", "cowplot", 
-              "RVAideMemoire", "microbiome", "knitr", "RColorBrewer", "Cairo", "multcompView")
+              "RVAideMemoire", "microbiome", "knitr", "RColorBrewer", "Cairo", "multcompView", 
+              "QsRutils", "dplyr", "ggvegan")
 
 lapply(packages, require, character.only = TRUE)
 
@@ -54,7 +55,7 @@ theme_set(theme_classic())
 
 # working directory ####
 
-setwd("/home/jharriso/GitHub/seili-metabarcoding/")
+setwd("/home/jharriso/git/seili-metabarcoding/")
 
 # load 16S RData ####
 
@@ -388,6 +389,75 @@ class.plot <- ggplot(raw2.ra.class.03,
 class.plot
 dev.off()
 
+# stacked taxon composition plot for five most abundant phyla (minus Proteobacteria) ####
+
+# remove Proteobacteria
+
+minusproteo <- tax_glom(raw2.ra, 
+                        taxrank = rank_names(raw2.ra)[2], 
+                        NArm = T,
+                        bad_empty = c(NA,""," ","\t"))
+
+minusproteo <- subset_taxa(minusproteo, Rank2 != "Proteobacteria")
+
+# subset to top 5 phyla
+
+top5ph <- sort(tapply(taxa_sums(minusproteo), 
+                      tax_table(minusproteo)[, "Rank2"], sum), 
+               decreasing = TRUE)[1:5]
+
+minusproteo <- subset_taxa(minusproteo, Rank2 %in% names(top5ph))
+
+# convert to data frame, convert phyla to factors
+# reorder the factors for plotting
+
+minusproteo <- psmelt(minusproteo)
+minusproteo$Rank2 <- factor(minusproteo$Rank2,
+                            levels = c("Bacteroidetes",
+                                       "Acidobacteria",
+                                       "Actinobacteria",
+                                       "Chloroflexi", 
+                                       "Ignavibacteriae"))
+
+# plot the data
+
+scaleFUN <- function(x) sprintf("%.2f", x) # for rounding y axis to two decimals
+
+# top five phyla bar plot
+Cairo(file = "figures/r_output/Fig5a_16S.png", 
+      type = "png", 
+      units = "cm", 
+      width = 19, 
+      height = 19, 
+      pointsize = 14, 
+      dpi = 300, 
+      bg= "white")
+
+fivephyla.plot <- ggplot(minusproteo, 
+                         aes(x = Replicate, y = Abundance, fill = Rank2)) + 
+  geom_bar(stat = "identity", position = "stack") +
+  facet_grid(Rank2 ~ Site, scales = "free_y") +
+  scale_fill_manual(values = colours) +
+  scale_y_continuous(name = "Relative abundance (%)", labels = scaleFUN) +
+  theme(axis.text.y = element_text(size = 12, 
+                                   hjust = 0.5)) +
+  theme(axis.title.y = element_text(size = 14)) +
+  theme(axis.title.x = element_blank()) +
+  theme(axis.text.x = element_text(size = 12, 
+                                   angle = 90, 
+                                   vjust = 0.5, 
+                                   hjust = 0.5)) +
+  theme(axis.ticks.x = element_blank()) +
+  theme(strip.text.x = element_text(size = 11)) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = "bottom") +
+  theme(legend.position="none")
+
+fivephyla.plot
+dev.off()
+
+#   scale_y_continuous(name = "Relative abundance (%)", labels = scaleFUN)
+
 # nMDS for CLR-transformed data ####
 
 set.seed(1)
@@ -490,13 +560,483 @@ capture.output(permdisp,
                file = "stats/permanova_permdisp_16S.txt", 
                append = TRUE)
 
-# get CLR-transformed abundance matrix from phyloseq object ####
+# db-RDA pt 1: load porosity-corrected environmental data and scale it (mean = 0, sd = 1) ####
 
-# extract abundance matrix
-abundance.matrix <- as(otu_table(rawdata.2.clr), "matrix")
+# load the environmental data
+# note: same values as in SeiliEnv_General_PorCorr.csv 
+# (but with phyloseq-friendly formatting)
 
-# transpose abundance matrix and coerce to a data frame
-abundance.df <- as.data.frame(t(abundance.matrix))
+envdata <- read.csv("envdata/envfit/16S_envdata_envfit.csv")
 
-# create ordination
-# CCA.vegan <- cca(Abundance_df ~ Farm + CN_1cm + IntO2 + NH4_Inv + HS_Inv, data = Env.CCA)
+# scale to mean zero and unit variance
+
+envdata <- as.data.frame(scale(envdata))
+
+# db-RDA pt 2: merge scaled env data with phyloseq object ####
+
+# add sequencing sample IDs to env data row names
+# (required for correct merging with phyloseq object)
+rownames(envdata) <- rownames(sample_data(rawdata.2.clr))
+
+# merge env data with phyloseq object
+envdata <- sample_data(envdata)
+rawdata.2.clr <- merge_phyloseq(rawdata.2.clr, envdata)
+
+# db-RDA pt 3: calculate VIFs + drop1() ####
+
+# see e.g.
+# http://www.hiercourse.com/docs/microbial/04_betaDiversity_multTables.html
+
+# at this point, performing a "preliminary" db-RDA using data in vegan format
+# and env data without site / replicate info. This is used to inspect VIFs.
+
+# convert phyloseq OTU table into vegan format
+rawdata.2.clr.otus <- veganotu(rawdata.2.clr)
+
+# extract sample data from phyloseq object
+rawdata.2.clr.samdata <- data.frame(sample_data(rawdata.2.clr))
+
+# select continuous variables (i.e. drop Replicate and Site)
+rawdata.2.clr.samdata.numeric <- select_if(rawdata.2.clr.samdata, is.numeric)
+
+# running test models with different combinations of variables
+# (based on PCA identifying potentially collinear variables; PCA.R)
+
+# overall, should only use up to five explanatory variables.
+# Running capscale() using all 18 would attempt to automatically alias
+# to a lower number of variables. Running VIF analysis on the remaining
+# variables shows high VIFs (not included here).
+
+# db-RDA test 1
+# Farm + CN_1cm + IntO2 + NH4_Inv + HS_Inv
+
+# (using Aitchison distances, i.e. Euclidean distances with CLR-transformed data)
+set.seed(1)
+viftest.res1 <- capscale(rawdata.2.clr.otus ~ Farm + CN_1cm + IntO2 + NH4_Inv + HS_Inv, 
+                         data = rawdata.2.clr.samdata.numeric, 
+                         distance = 'euclidean')
+
+# calculate VIFs
+viftest.res1.vifs <- sort(vif.cca(viftest.res1))
+
+# drop1() for db-RDA test 1
+set.seed(1)
+viftest.res1.drop1 <- drop1(viftest.res1, test = "perm")
+
+# save db-RDA test 1 output
+
+cat(" ------------------------------------",
+    "\n", "16S - test model 1", "\n",
+    "------------------------------------",
+    "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt")
+
+capture.output(viftest.res1, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+cat(" Model 1 VIFs (lowest to highest)", "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res1.vifs, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+cat("\n", "Model 1 drop1() analysis", "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res1.drop1, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+# HS_Inv and and NH4_Inv have high VIFs and
+# are also flagged as p < 0.05 by drop1.
+# --> Try without HS_Inv (i.e. 4 rather than 5 variables)
+
+# db-RDA test 2
+# Farm + CN_1cm + IntO2 + NH4_Inv
+
+set.seed(1)
+viftest.res2 <- capscale(rawdata.2.clr.otus ~ Farm + CN_1cm + IntO2 + NH4_Inv, 
+                         data = rawdata.2.clr.samdata.numeric, 
+                         distance = 'euclidean')
+
+# calculate VIFs
+viftest.res2.vifs <- sort(vif.cca(viftest.res2))
+
+# drop1() for db-RDA test 2
+set.seed(1)
+viftest.res2.drop1 <- drop1(viftest.res2, test = "perm")
+
+# save db-RDA test 1 output
+
+cat("\n",
+    "------------------------------------",
+    "\n", "16S - test model 2", "\n",
+    "------------------------------------",
+    "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res2, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+cat(" Model 2 VIFs (lowest to highest)", "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res2.vifs, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+cat("\n", "Model 2 drop1() analysis", "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res2.drop1, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+# Here, VIFs and drop1() look much better.
+# 52.6% of variance constrained, try another model still with grain size included.
+
+# db-RDA test 3
+# Farm + CN_1cm + IntO2 + NH4_Inv + grain
+
+set.seed(1)
+viftest.res3 <- capscale(rawdata.2.clr.otus ~ Farm + CN_1cm + IntO2 + NH4_Inv + Grain, 
+                         data = rawdata.2.clr.samdata.numeric, 
+                         distance = 'euclidean')
+
+# calculate VIFs
+viftest.res3.vifs <- sort(vif.cca(viftest.res3))
+
+# drop1() for db-RDA test 3
+set.seed(1)
+viftest.res3.drop1 <- drop1(viftest.res3, test = "perm")
+
+# save db-RDA test 3 output
+
+cat("\n",
+    "------------------------------------",
+    "\n", "16S - test model 3", "\n",
+    "------------------------------------",
+    "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res3, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+cat(" Model 3 VIFs (lowest to highest)", "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res3.vifs, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+cat("\n", "Model 3 drop1() analysis", "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res3.drop1, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+# VIFs again look acceptable.
+# With grain size included in the model, 56% of variance explained (drop1 suggests grain size could be left out).
+# However, since doesn't adversely affect VIFs and may provide a comparison point for other variables, included
+# as part of the final model.
+
+# db-RDA pt 4: perform db-RDA + envfit for VIF-based model ####
+
+# db-RDA
+# using variables established in step 3
+# (see output for viftest.res3)
+
+set.seed(1)
+vifmod.dbrda <- ordinate(rawdata.2.clr, 
+                    method = "CAP", 
+                    distance = "euclidean",
+                    formula = ~ Farm + CN_1cm + IntO2 + NH4_Inv + Grain)
+
+# envfit (as a data frame using fortify)
+# calculated on linear combinations of scores
+# see: https://www.davidzeleny.net/anadat-r/doku.php/en:confusions
+
+set.seed(1)
+envfit.lc <- fortify(
+  envfit(vifmod.dbrda ~ Farm + CN_1cm + IntO2 + NH4_Inv + Grain,
+         data = rawdata.2.clr.samdata,
+         permutations = 999, display = 'lc')
+)
+
+# db-RDA pt 5: plot db-RDA + envfit for VIF-based model ####
+
+# Note: arbitrary multiplier addded to xend + yend
+# for plotting purposes (could also be handled through scaling)
+
+Cairo(file = "figures/r_output/Fig6a_16S.png", 
+      type = "png", 
+      units = "cm", 
+      width = 20, 
+      height = 20, 
+      pointsize = 14, 
+      dpi = 300, 
+      bg= "white")
+
+vifmod.dbrda.plot <- plot_ordination(rawdata.2.clr, 
+                            vifmod.dbrda, 
+                            color = "Site") +
+  theme(aspect.ratio = 1) +
+  scale_colour_brewer(type = "qual", 
+                      palette = "Dark2") + 
+  geom_point(size = 6.5, alpha = 0.75) +
+  geom_segment(data = envfit.lc,
+               aes(x = 0, 
+                   y = 0, 
+                   xend = CAP1*6, 
+                   yend = CAP2*6), 
+               size = 1, 
+               alpha = 0.5, 
+               colour = "grey30") +
+  geom_label(data = envfit.lc, 
+            aes(x = CAP1*6, 
+                y = CAP2*6),
+            label = envfit.lc$Label, 
+            colour = "black", 
+            fontface = "bold",
+            size = 4) + 
+  theme(axis.title = element_blank()) +
+  theme(axis.ticks = element_blank()) +
+  theme(axis.text = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = c(0.92, 0.88),
+        legend.background = element_rect(fill = "white", color = "black"),
+        legend.text = element_text(size = 13))  
+
+vifmod.dbrda.plot
+dev.off()
+
+# db-RDA pt 6: permutation test for db-RDA explanatory variables (VIF-based model) ####
+
+# test done using 999 permutations with remaining variables as covariates
+# + Benjamini-Hochberg correction
+
+set.seed(1)
+margin.vifmod.dbrda <- anova(vifmod.dbrda, by = 'margin', parallel = 4)
+margin.vifmod.dbrda$`Pr(>F)` <- p.adjust(margin.vifmod.dbrda$`Pr(>F)`, method = 'BH')
+
+# save permutation test results
+
+cat(" -------------------------------------------------------------------",
+    "\n", "16S - model 1 - permutation test with remaining vars as covariates", "\n",
+    "-------------------------------------------------------------------",
+    "\n", "\n",
+    file = "tables/permtest_covariates_mod1_16S.txt")
+
+capture.output(margin.vifmod.dbrda, 
+               file = "tables/permtest_covariates_mod1_16S.txt",
+               append = TRUE)
+
+# db-RDA pt 7: VIFs for monitoring-based model ####
+
+# db-RDA test 4
+# C_1cm + O2_BW + Temp_BW + NOX_BW + P_BW
+# (We can expect collinearity between O2 and Temp in advance)
+
+set.seed(1)
+viftest.res4 <- capscale(rawdata.2.clr.otus ~ C_1cm + O2_BW + Temp_BW + NOX_BW + P_BW, 
+                         data = rawdata.2.clr.samdata.numeric, 
+                         distance = 'euclidean')
+
+# calculate VIFs
+viftest.res4.vifs <- sort(vif.cca(viftest.res4))
+
+# drop1() for db-RDA test 4
+set.seed(1)
+viftest.res4.drop1 <- drop1(viftest.res4, test = "perm")
+
+# save db-RDA test 4 output
+
+cat("\n",
+    "------------------------------------",
+    "\n", "16S - test model 4", "\n",
+    "------------------------------------",
+    "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res4, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+cat(" Model 4 VIFs (lowest to highest)", "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res4.vifs, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+cat("\n", "Model 4 drop1() analysis", "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res4.drop1, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+# High VIFs (e.g. O2_BW is >20).
+# drop1 suggests that removing O2_BW would have less of an effect on the AIC that removing temp would.
+
+# Regardless, O2 is also included in VIF-based model and there is good reason to keep this parameter 
+# (since organic loading has resulted in low O2 near the farm).
+# --> Try version with Temp_BW removed.
+
+# db-RDA test 5
+# C_1cm + O2_BW + NOX_BW + P_BW
+
+set.seed(1)
+viftest.res5 <- capscale(rawdata.2.clr.otus ~ C_1cm + O2_BW + NOX_BW + P_BW, 
+                         data = rawdata.2.clr.samdata.numeric, 
+                         distance = 'euclidean')
+
+# calculate VIFs
+viftest.res5.vifs <- sort(vif.cca(viftest.res5))
+
+# drop1() for db-RDA test 5
+set.seed(1)
+viftest.res5.drop1 <- drop1(viftest.res5, test = "perm")
+
+# save db-RDA test 5 output
+
+cat("\n",
+    "------------------------------------",
+    "\n", "16S - test model 5", "\n",
+    "------------------------------------",
+    "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res5, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+cat(" Model 5 VIFs (lowest to highest)", "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res5.vifs, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+cat("\n", "Model 5 drop1() analysis", "\n", "\n",
+    file = "stats/vifs_testmodels_16S.txt",
+    append = TRUE)
+
+capture.output(viftest.res5.drop1, 
+               file = "stats/vifs_testmodels_16S.txt",
+               append = TRUE)
+
+# VIFs and drop1() look better.
+# 46% constrained.
+
+
+
+
+# db-RDA pt 8: perform db-RDA + envit for monitoring-based model ####
+
+# db-RDA
+# using variables established in step 7
+# (see output for viftest.res5)
+
+set.seed(1)
+vifmod.dbrda.mon <- ordinate(rawdata.2.clr, 
+                             method = "CAP", 
+                             distance = "euclidean",
+                             formula = ~ C_1cm + O2_BW + NOX_BW + P_BW)
+
+# envfit (as a data frame using fortify)
+# calculated on linear combinations of scores
+# see: https://www.davidzeleny.net/anadat-r/doku.php/en:confusions
+
+set.seed(1)
+envfit.lc.mon <- fortify(
+  envfit(vifmod.dbrda.mon ~ C_1cm + O2_BW + NOX_BW + P_BW,
+         data = rawdata.2.clr.samdata,
+         permutations = 999, display = 'lc')
+)
+# db-RDA pt 9: plot db-RDA + envit for monitoring-based model ####
+
+# Layout for Fig. 6:
+# a) 16S, VIF-based model (this script)
+# b) 18S, VIF-based model (18S script)
+# c) 16S, Monitoring-based model (this script)
+# d) 18S, Monitoring-based model (18S script)
+
+# Note: arbitrary multiplier addded to xend + yend
+# for plotting purposes (could also be handled through scaling)
+
+Cairo(file = "figures/r_output/Fig6c_16S.png", 
+      type = "png", 
+      units = "cm", 
+      width = 20, 
+      height = 20, 
+      pointsize = 14, 
+      dpi = 300, 
+      bg= "white")
+
+vifmod.dbrda.mon.plot <- plot_ordination(rawdata.2.clr, 
+                                         vifmod.dbrda.mon, 
+                                         color = "Site") +
+  theme(aspect.ratio = 1) +
+  scale_colour_brewer(type = "qual", 
+                      palette = "Dark2") + 
+  geom_point(size = 6.5, alpha = 0.75) +
+  geom_segment(data = envfit.lc.mon,
+               aes(x = 0, 
+                   y = 0, 
+                   xend = CAP1*6, 
+                   yend = CAP2*6), 
+               size = 1, 
+               alpha = 0.5, 
+               colour = "grey30") +
+  geom_label(data = envfit.lc.mon, 
+             aes(x = CAP1*6, 
+                 y = CAP2*6),
+             label = envfit.lc.mon$Label, 
+             colour = "black", 
+             fontface = "bold",
+             size = 4) + 
+  theme(axis.title = element_blank()) +
+  theme(axis.ticks = element_blank()) +
+  theme(axis.text = element_blank()) +
+  theme(legend.position = "none") +
+  expand_limits(x = 5.7) # extra line to make sure 02_BW label included in full
+
+vifmod.dbrda.mon.plot
+dev.off()
+
+# db-RDA pt 10: permutation test for db-RDA explanatory variables (monitoring-based model) ####
+
+set.seed(1)
+margin.vifmod.dbrda.mon <- anova(vifmod.dbrda.mon, by = 'margin', parallel = 4)
+margin.vifmod.dbrda.mon$`Pr(>F)` <- p.adjust(margin.vifmod.dbrda.mon$`Pr(>F)`, method = 'BH')
+
+# save permutation test results
+
+cat(" -------------------------------------------------------------------",
+    "\n", "16S - model 2 - permutation test with remaining vars as covariates", "\n",
+    "-------------------------------------------------------------------",
+    "\n", "\n",
+    file = "tables/permtest_covariates_mod2_16S.txt")
+
+capture.output(margin.vifmod.dbrda.mon, 
+               file = "tables/permtest_covariates_mod2_16S.txt",
+               append = TRUE)

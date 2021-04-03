@@ -55,7 +55,7 @@ theme_set(theme_classic())
 
 # working directory ####
 
-setwd("/home/jharriso/GitHub/seili-metabarcoding/")
+setwd("/home/jharriso/git/seili-metabarcoding/")
 
 # load porosity-corrected environmental data ####
 

@@ -1,0 +1,18 @@
+ ------------------------------------------------------------------- 
+ 16S - model 2 - permutation test with remaining vars as covariates 
+ ------------------------------------------------------------------- 
+ 
+Permutation test for capscale under reduced model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+Model: capscale(formula = OTU ~ C_1cm + O2_BW + NOX_BW + P_BW, data = data, distance = distance)
+         Df Variance      F   Pr(>F)   
+C_1cm     1   513.49 4.7359 0.004000 **
+O2_BW     1   281.83 2.5993 0.007000 **
+NOX_BW    1   350.73 3.2348 0.005333 **
+P_BW      1   335.19 3.0915 0.005333 **
+Residual 25  2710.62                   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

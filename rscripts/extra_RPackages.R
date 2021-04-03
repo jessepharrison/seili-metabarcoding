@@ -18,3 +18,8 @@ BiocManager::install("DESeq2", lib = libpath, update = FALSE)
 
 # Other packages
 install.packages("ggrepel", lib = libpath)
+devtools::install_github("gavinsimpson/ggvegan", lib = libpath)
+devtools::install_github("jfq3/QsRutils", lib = libpath)
+
+# QsRutils is from:
+# https://github.com/jfq3/QsRutils
