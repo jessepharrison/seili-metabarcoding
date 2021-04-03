@@ -9,11 +9,11 @@ Number of permutations: 999
 
 Model: capscale(formula = OTU ~ Farm + CN_1cm + IntO2 + NH4_Inv + Grain, data = data, distance = distance)
          Df Variance      F  Pr(>F)   
-Farm      1   260.72 2.8263 0.01667 * 
-CN_1cm    1   183.01 1.9839 0.05000 * 
-IntO2     1   282.81 3.0657 0.01000 **
-NH4_Inv   1   609.84 6.6109 0.00500 **
-Grain     1   156.36 1.6950 0.07600 . 
-Residual 24  2213.96                  
+Farm      1   179.43 3.0144 0.01833 * 
+CN_1cm    1   114.52 1.9240 0.06500 . 
+IntO2     1   191.99 3.2255 0.01250 * 
+NH4_Inv   1   430.37 7.2302 0.00500 **
+Grain     1   100.28 1.6847 0.09000 . 
+Residual 24  1428.55                  
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

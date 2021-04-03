@@ -1,6 +1,5 @@
 # Seili 16S analysis - jesse harrison 2020-2021
 # using seili-r Singularity container (based on seili-r.def)
-
 # additional libpath ####
 # (see extra_RPackages.R for extra package installs)
 
@@ -115,14 +114,17 @@ table(tax_table(rawdata)[, "Rank2"], exclude = NULL)
 # a few phyla that occur only once: candidate division WPS-2, Chlamydiae, Thermotogae
 # there are also 6035 NAs that are likely to be artifacts
 
-# first, take out NAs, mitochondrial + chloroplast sequences + make new tax table
+# first, take out NAs, chloroplast + mitochondrial sequences and make new tax table
 rawdata.bac <- subset_taxa(rawdata, 
                            Rank1 == "Bacteria" & 
-                             Rank3 != "Chloroplast")
+                             Rank3 != "Chloroplast" & # Class Chloroplast removed
+                             Rank5 != "Mitochondria") # Family Mitochondria removed
+
+# above step is quite similar to https://www.frontiersin.org/articles/10.3389/fmicb.2020.582867/full
 
 table(tax_table(rawdata.bac)[, "Rank2"], exclude = NULL)
 
-# no. of taxa after removing mitochondrial + chloroplast sequences
+# no. of taxa after removing NAs, chloroplast and mitochondrial sequences
 ntaxa(rawdata.bac)
 
 # workflow based on: https://f1000research.com/articles/5-1492/v2
@@ -188,10 +190,10 @@ ggplot(prevdt.raw, aes(Prevalence)) +
 prevdt.raw[(Prevalence <= 0), .N] ## [1] 0
 
 # how many singletons?
-prevdt.raw[(Prevalence <= 1), .N] ## [1] 298
+prevdt.raw[(Prevalence <= 1), .N] ## [1] 180
 
 # how many doubletons?
-prevdt.raw[(Prevalence <= 2), .N] ## [1] 725
+prevdt.raw[(Prevalence <= 2), .N] ## [1] 410
 
 # taxa cumulative sum with prevalence on x axis
 prevcumsum.raw <- prevdt.raw[, .N, by = Prevalence]
@@ -296,7 +298,7 @@ raw2.ra.phylum.02 <- subset(raw2.ra.phylum,
                             Abundance > 0.02)
 
 # % retained after removing OTUs < 2%
-sum(raw2.ra.phylum.02$Abundance)/sum(raw2.ra.phylum$Abundance) # 91.4%
+sum(raw2.ra.phylum.02$Abundance)/sum(raw2.ra.phylum$Abundance) # 89.7%
 
 # define colour palette
 colours <- c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA",
@@ -352,8 +354,8 @@ raw2.ra.class <- psmelt(raw2.ra.class)
 raw2.ra.class.03 <- subset(raw2.ra.class, 
                            Abundance > 0.03)
 
-# % remaining after removing OTUs <10%
-sum(raw2.ra.class.03$Abundance)/sum(raw2.ra.class$Abundance) # retains 75% of original data
+# % remaining after removing OTUs <3%
+sum(raw2.ra.class.03$Abundance)/sum(raw2.ra.class$Abundance) # retains 70.2% of original data
 
 Cairo(file = "figures/r_output/FigS6_16S.png", 
       type = "png", units = "cm", 
@@ -415,7 +417,7 @@ minusproteo <- psmelt(minusproteo)
 minusproteo$Rank2 <- factor(minusproteo$Rank2,
                             levels = c("Bacteroidetes",
                                        "Acidobacteria",
-                                       "Actinobacteria",
+                                       "Nitrospirae",
                                        "Chloroflexi", 
                                        "Ignavibacteriae"))
 
@@ -701,7 +703,7 @@ capture.output(viftest.res2.drop1,
                append = TRUE)
 
 # Here, VIFs and drop1() look much better.
-# 52.6% of variance constrained, try another model still with grain size included.
+# 54.8% of variance constrained, try another model still with grain size included.
 
 # db-RDA test 3
 # Farm + CN_1cm + IntO2 + NH4_Inv + grain
@@ -749,7 +751,7 @@ capture.output(viftest.res3.drop1,
                append = TRUE)
 
 # VIFs again look acceptable.
-# With grain size included in the model, 56% of variance explained (drop1 suggests grain size could be left out).
+# With grain size included in the model, 58% of variance explained (drop1 suggests grain size could be left out).
 # However, since doesn't adversely affect VIFs and may provide a comparison point for other variables, included
 # as part of the final model.
 
@@ -945,10 +947,7 @@ capture.output(viftest.res5.drop1,
                append = TRUE)
 
 # VIFs and drop1() look better.
-# 46% constrained.
-
-
-
+# 48% constrained.
 
 # db-RDA pt 8: perform db-RDA + envit for monitoring-based model ####
 

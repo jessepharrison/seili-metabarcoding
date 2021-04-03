@@ -11,9 +11,9 @@ Number of permutations: 999
 Terms added sequentially (first to last)
 
           Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
-Site       5     80843 16168.7  6.0439 0.55735  0.001 ***
-Residuals 24     64205  2675.2         0.44265           
-Total     29    145048                 1.00000           
+Site       5     56607 11321.3  6.5586 0.57741  0.001 ***
+Residuals 24     41428  1726.2         0.42259           
+Total     29     98035                 1.00000           
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
@@ -45,5 +45,5 @@ Number of permutations: 999
 
 Response: Distances
           Df  Sum Sq Mean Sq      F N.Perm Pr(>F)
-Groups     5  62.304 12.4609 1.2685    999   0.33
-Residuals 24 235.758  9.8232                     
+Groups     5  54.199 10.8399 1.6282    999  0.203
+Residuals 24 159.780  6.6575                     
