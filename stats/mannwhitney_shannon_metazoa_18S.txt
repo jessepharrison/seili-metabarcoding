@@ -1,0 +1,10 @@
+ ------------------------------------------------------------------- 
+ 18S - Shannon index (S1-S3 vs S4-S6) - Mann-Whitney U 
+ ------------------------------------------------------------------- 
+
+	Wilcoxon rank sum exact test
+
+data:  Shannon by Grouping
+W = 11, p-value = 0.0001442
+alternative hypothesis: true location shift is not equal to 0
+

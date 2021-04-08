@@ -227,7 +227,7 @@ prevdf.raw.phyla <- subset(prevdf.raw,
 
 ggplot(prevdf.raw.phyla, 
        aes(TotalAbundance, 
-           Prevalence / nsamples(rawdata.bac.0),
+           Prevalence / nsamples(rawdata.1),
            color = Rank2)) +
   # Include a guess for parameter (5 % of total samples)
   geom_hline(yintercept = 0.05, 
@@ -253,35 +253,26 @@ dev.off()
 # 5% prevalence filter ####
 
 # define 5% prevalence threshold for filtering
-prevalenceThreshold.raw <- 0.05 * nsamples(rawdata.bac.0)
+prevalenceThreshold.raw <- 0.05 * nsamples(rawdata.1)
 
 # execute prevalence filter, using `prune_taxa()` function
 keepTaxa.raw <- rownames(prevdf.raw.phyla)[(prevdf.raw.phyla$Prevalence >= prevalenceThreshold.raw)]
-rawdata.2 <- prune_taxa(keepTaxa.raw, rawdata.bac.0)
+rawdata.2 <- prune_taxa(keepTaxa.raw, rawdata.1)
 
-# data transformation ####
+# CLR transformation ####
 
 # CLR transformation (microbiome package) for data using 5% prevalence filter (rawdata.2)
 
 rawdata.2.clr <- transform(rawdata.2, 'clr')
 
-# Hellinger transformation
-# (Included for completeness in case required, commented out)
-
-# rawdata.2.hellinger <- rawdata.2
-# otu_table(rawdata.2.hellinger) <- otu_table(decostand(otu_table(rawdata.2.hellinger), 
-#                                                      method = "hellinger"), taxa_are_rows = TRUE)
-
-# % transformation (commented out)
-# rawdata.2.hellinger <- transform_sample_counts(rawdata.2, function(x) x/sum(x))
-
-# stacked taxon composition plots for %RA data (no CLR) ####
+# stacked taxon composition plots for %RA data (Hellinger transformation) ####
 
 # taxon composition plots showed as proportions (%) for readability
-# note: here not using CLR-transformed data
+# note: here not using CLR-transformed data but Hellinger (for visualisation)
 
-# relative abundance conversion
-raw2.ra <- transform_sample_counts(rawdata.2, 
+# Hellinger transformation + relative abundance conversion
+raw2.ra <- microbiome::transform(rawdata.2, 'hellinger')
+raw2.ra <- transform_sample_counts(raw2.ra, 
                                    function(x) x/sum(x))
 
 # subset the data to phylum level (= rank2), cut out low-abundance taxa
@@ -298,7 +289,7 @@ raw2.ra.phylum.02 <- subset(raw2.ra.phylum,
                             Abundance > 0.02)
 
 # % retained after removing OTUs < 2%
-sum(raw2.ra.phylum.02$Abundance)/sum(raw2.ra.phylum$Abundance) # 89.7%
+sum(raw2.ra.phylum.02$Abundance)/sum(raw2.ra.phylum$Abundance) # 86.7%
 
 # define colour palette
 colours <- c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA",
@@ -343,19 +334,19 @@ dev.off()
 
 # class level plot (= rank3)
 raw2.ra.class <- tax_glom(raw2.ra, 
-                          taxrank = rank_names(rawdata.2)[3], 
+                          taxrank = rank_names(raw2.ra)[3], 
                           NArm = T,
                           bad_empty = c(NA,""," ","\t"))
 
 # psmelt raw2.ra.class
 raw2.ra.class <- psmelt(raw2.ra.class)
 
-# cut out OTUs <3%
+# cut out OTUs <2%
 raw2.ra.class.03 <- subset(raw2.ra.class, 
                            Abundance > 0.03)
 
 # % remaining after removing OTUs <3%
-sum(raw2.ra.class.03$Abundance)/sum(raw2.ra.class$Abundance) # retains 70.2% of original data
+sum(raw2.ra.class.03$Abundance)/sum(raw2.ra.class$Abundance) # retains 55.7% of original data
 
 Cairo(file = "figures/r_output/FigS6_16S.png", 
       type = "png", units = "cm", 
@@ -394,6 +385,7 @@ dev.off()
 # stacked taxon composition plot for five most abundant phyla (minus Proteobacteria) ####
 
 # remove Proteobacteria
+# note that we are using Hellinger-transformed data here
 
 minusproteo <- tax_glom(raw2.ra, 
                         taxrank = rank_names(raw2.ra)[2], 
@@ -416,8 +408,8 @@ minusproteo <- subset_taxa(minusproteo, Rank2 %in% names(top5ph))
 minusproteo <- psmelt(minusproteo)
 minusproteo$Rank2 <- factor(minusproteo$Rank2,
                             levels = c("Bacteroidetes",
+                                       "Planctomycetes",
                                        "Acidobacteria",
-                                       "Nitrospirae",
                                        "Chloroflexi", 
                                        "Ignavibacteriae"))
 
@@ -453,7 +445,7 @@ fivephyla.plot <- ggplot(minusproteo,
   theme(strip.text.x = element_text(size = 11)) +
   theme(legend.title = element_blank()) +
   theme(legend.position = "bottom") +
-  theme(legend.position="none")
+  theme(legend.position = "none")
 
 fivephyla.plot
 dev.off()
@@ -488,7 +480,9 @@ nMDS.plot.rawdata.2.clr <- plot_ordination(rawdata.2.clr,
   theme(axis.ticks = element_blank()) +
   theme(axis.text = element_blank()) +
   theme(legend.title = element_blank()) +
-  theme(legend.position = "bottom")
+  theme(legend.position = c(0.1, 0.8),
+        legend.background = element_rect(fill = "white", color = "black"),
+        legend.text = element_text(size = 13))  
 
 nMDS.plot.rawdata.2.clr
 dev.off()
@@ -783,6 +777,12 @@ envfit.lc <- fortify(
 # Note: arbitrary multiplier addded to xend + yend
 # for plotting purposes (could also be handled through scaling)
 
+# Layout for Fig. 6:
+# a) 16S, VIF-based model (this script)
+# b) 18S, VIF-based model (18S script)
+# c) 16S, Monitoring-based model (this script)
+# d) 18S, Monitoring-based model (18S script)
+
 Cairo(file = "figures/r_output/Fig6a_16S.png", 
       type = "png", 
       units = "cm", 
@@ -813,7 +813,7 @@ vifmod.dbrda.plot <- plot_ordination(rawdata.2.clr,
             label = envfit.lc$Label, 
             colour = "black", 
             fontface = "bold",
-            size = 4) + 
+            size = 3.5) + 
   theme(axis.title = element_blank()) +
   theme(axis.ticks = element_blank()) +
   theme(axis.text = element_blank()) +
@@ -973,12 +973,6 @@ envfit.lc.mon <- fortify(
 )
 # db-RDA pt 9: plot db-RDA + envit for monitoring-based model ####
 
-# Layout for Fig. 6:
-# a) 16S, VIF-based model (this script)
-# b) 18S, VIF-based model (18S script)
-# c) 16S, Monitoring-based model (this script)
-# d) 18S, Monitoring-based model (18S script)
-
 # Note: arbitrary multiplier addded to xend + yend
 # for plotting purposes (could also be handled through scaling)
 
@@ -1012,7 +1006,7 @@ vifmod.dbrda.mon.plot <- plot_ordination(rawdata.2.clr,
              label = envfit.lc.mon$Label, 
              colour = "black", 
              fontface = "bold",
-             size = 4) + 
+             size = 3.5) + 
   theme(axis.title = element_blank()) +
   theme(axis.ticks = element_blank()) +
   theme(axis.text = element_blank()) +

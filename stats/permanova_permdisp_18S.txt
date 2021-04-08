@@ -1,0 +1,51 @@
+ ------------------------------------ 
+ 18S - GLOBAL PERMANOVA 
+ ------------------------------------ 
+
+Call:
+adonis(formula = rawdata.2.clr.euc ~ Site, data = rawdata.2.clr.df) 
+
+Permutation: free
+Number of permutations: 999
+
+Terms added sequentially (first to last)
+
+          Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
+Site       5     11651 2330.14  2.4149 0.40148  0.001 ***
+Residuals 18     17368  964.92         0.59852           
+Total     23     29019                 1.00000           
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+ ------------------------------------ 
+ 18S - PAIRWISE PERMANOVA 
+ ------------------------------------ 
+
+	Pairwise comparisons using permutation MANOVAs on a distance matrix 
+
+data:  rawdata.2.clr.euc by rawdata.2.clr.df$Site
+999 permutations 
+
+   S1    S2    S3    S4    S5   
+S2 0.036 -     -     -     -    
+S3 0.036 0.036 -     -     -    
+S4 0.036 0.036 0.036 -     -    
+S5 0.036 0.036 0.036 0.036 -    
+S6 0.036 0.036 0.036 0.038 0.036
+
+P value adjustment method: BH 
+
+ ------------------------------------ 
+ 18S - PERMDISP 
+ ------------------------------------ 
+
+Permutation test for homogeneity of multivariate dispersions
+Permutation: free
+Number of permutations: 999
+
+Response: Distances
+          Df Sum Sq Mean Sq    F N.Perm Pr(>F)    
+Groups     5 274.60  54.919 9.26    999  0.001 ***
+Residuals 18 106.75   5.931                       
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
