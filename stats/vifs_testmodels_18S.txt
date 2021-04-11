@@ -1,0 +1,76 @@
+ ------------------------------------ 
+ 16S - test model 3 
+ ------------------------------------ 
+ 
+Call: capscale(formula = rawdata.2.clr.otus ~ Farm + CN_1cm + IntO2 + NH4_Inv + Grain, data = rawdata.2.clr.samdata.numeric, distance = "euclidean")
+
+                Inertia Proportion Rank
+Total         1261.7048     1.0000     
+Constrained    506.5518     0.4015    5
+Unconstrained  755.1530     0.5985   18
+Inertia is mean squared Euclidean distance 
+Species scores projected from ‘rawdata.2.clr.otus’ 
+
+Eigenvalues for constrained axes:
+  CAP1   CAP2   CAP3   CAP4   CAP5 
+171.66 120.69  92.15  64.94  57.10 
+
+Eigenvalues for unconstrained axes:
+ MDS1  MDS2  MDS3  MDS4  MDS5  MDS6  MDS7  MDS8 
+71.26 64.33 59.78 58.54 49.40 48.66 44.96 42.36 
+(Showing 8 of 18 unconstrained eigenvalues)
+
+ Model 3 VIFs (lowest to highest) 
+ 
+ NH4_Inv   CN_1cm     Farm    Grain    IntO2 
+2.083147 2.305570 5.350545 5.476191 6.036453 
+
+ Model 3 drop1() analysis 
+ 
+        Df    AIC      F Pr(>F)   
+<none>     170.03                 
+Farm     1 169.91 1.4698  0.025 * 
+CN_1cm   1 170.42 1.8865  0.005 **
+IntO2    1 170.21 1.7145  0.005 **
+NH4_Inv  1 170.18 1.6908  0.015 * 
+Grain    1 170.06 1.5970  0.010 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+ ------------------------------------ 
+ 16S - test model 5 
+ ------------------------------------ 
+ 
+Call: capscale(formula = rawdata.2.clr.otus ~ C_1cm + O2_BW + NOX_BW + P_BW, data = rawdata.2.clr.samdata.numeric, distance = "euclidean")
+
+               Inertia Proportion Rank
+Total         1261.705      1.000     
+Constrained    408.769      0.324    4
+Unconstrained  852.935      0.676   19
+Inertia is mean squared Euclidean distance 
+Species scores projected from ‘rawdata.2.clr.otus’ 
+
+Eigenvalues for constrained axes:
+  CAP1   CAP2   CAP3   CAP4 
+161.11  92.37  90.43  64.87 
+
+Eigenvalues for unconstrained axes:
+  MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+101.64  70.16  64.09  59.78  57.75  49.28  48.63  44.91 
+(Showing 8 of 19 unconstrained eigenvalues)
+
+ Model 5 VIFs (lowest to highest) 
+ 
+    C_1cm      P_BW    NOX_BW     O2_BW 
+ 7.334638  8.494925 11.538491 13.709284 
+
+ Model 5 drop1() analysis 
+ 
+       Df    AIC      F Pr(>F)   
+<none>    170.95                 
+C_1cm   1 171.65 2.2625  0.005 **
+O2_BW   1 171.16 1.8318  0.005 **
+NOX_BW  1 171.40 2.0470  0.010 **
+P_BW    1 171.02 1.7154  0.010 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

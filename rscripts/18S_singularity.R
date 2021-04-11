@@ -609,7 +609,107 @@ rawdata.2.clr <- merge_phyloseq(rawdata.2.clr, envdata)
 
 
 
-# db-RDA pt 3: perform db-RDA + envfit for VIF-based model ####
+# db-RDA pt 3: capscale for 18S models ####
+
+# db-RDA test 3
+# (keeping annotation the same here as what is used in the 16S script)
+# Farm + CN_1cm + IntO2 + NH4_Inv + grain
+
+# convert phyloseq OTU table into vegan format
+rawdata.2.clr.otus <- veganotu(rawdata.2.clr)
+
+# extract sample data from phyloseq object
+rawdata.2.clr.samdata <- data.frame(sample_data(rawdata.2.clr))
+
+# select continuous variables (i.e. drop Replicate and Site)
+rawdata.2.clr.samdata.numeric <- select_if(rawdata.2.clr.samdata, is.numeric)
+
+set.seed(1)
+viftest.res3 <- capscale(rawdata.2.clr.otus ~ Farm + CN_1cm + IntO2 + NH4_Inv + Grain, 
+                         data = rawdata.2.clr.samdata.numeric, 
+                         distance = 'euclidean')
+
+# calculate VIFs
+viftest.res3.vifs <- sort(vif.cca(viftest.res3))
+
+# drop1() for db-RDA test 3
+set.seed(1)
+viftest.res3.drop1 <- drop1(viftest.res3, test = "perm")
+
+# save db-RDA test 3 output
+
+cat(" ------------------------------------",
+    "\n", "16S - test model 3", "\n",
+    "------------------------------------",
+    "\n", "\n",
+    file = "stats/vifs_testmodels_18S.txt")
+
+capture.output(viftest.res3, 
+               file = "stats/vifs_testmodels_18S.txt",
+               append = TRUE)
+
+cat(" Model 3 VIFs (lowest to highest)", "\n", "\n",
+    file = "stats/vifs_testmodels_18S.txt",
+    append = TRUE)
+
+capture.output(viftest.res3.vifs, 
+               file = "stats/vifs_testmodels_18S.txt",
+               append = TRUE)
+
+cat("\n", "Model 3 drop1() analysis", "\n", "\n",
+    file = "stats/vifs_testmodels_18S.txt",
+    append = TRUE)
+
+capture.output(viftest.res3.drop1, 
+               file = "stats/vifs_testmodels_18S.txt",
+               append = TRUE)
+
+# db-RDA test 5
+# C_1cm + O2_BW + NOX_BW + P_BW
+
+set.seed(1)
+viftest.res5 <- capscale(rawdata.2.clr.otus ~ C_1cm + O2_BW + NOX_BW + P_BW, 
+                         data = rawdata.2.clr.samdata.numeric, 
+                         distance = 'euclidean')
+
+# calculate VIFs
+viftest.res5.vifs <- sort(vif.cca(viftest.res5))
+
+# drop1() for db-RDA test 5
+set.seed(1)
+viftest.res5.drop1 <- drop1(viftest.res5, test = "perm")
+
+# save db-RDA test 5 output
+
+cat("\n",
+    "------------------------------------",
+    "\n", "16S - test model 5", "\n",
+    "------------------------------------",
+    "\n", "\n",
+    file = "stats/vifs_testmodels_18S.txt",
+    append = TRUE)
+
+capture.output(viftest.res5, 
+               file = "stats/vifs_testmodels_18S.txt",
+               append = TRUE)
+
+cat(" Model 5 VIFs (lowest to highest)", "\n", "\n",
+    file = "stats/vifs_testmodels_18S.txt",
+    append = TRUE)
+
+capture.output(viftest.res5.vifs, 
+               file = "stats/vifs_testmodels_18S.txt",
+               append = TRUE)
+
+cat("\n", "Model 5 drop1() analysis", "\n", "\n",
+    file = "stats/vifs_testmodels_18S.txt",
+    append = TRUE)
+
+capture.output(viftest.res5.drop1, 
+               file = "stats/vifs_testmodels_18S.txt",
+               append = TRUE)
+
+# db-RDA pt 4: perform db-RDA + envfit for VIF-based model ####
 
 # See 16S script for VIF calculations
 
@@ -638,7 +738,7 @@ envfit.lc <- fortify(
 
 
 
-# db-RDA pt 4: plot db-RDA + envfit for VIF-based model ####
+# db-RDA pt 5: plot db-RDA + envfit for VIF-based model ####
 
 # Note: arbitrary multiplier addded to xend + yend
 # for plotting purposes (could also be handled through scaling)
@@ -692,7 +792,7 @@ dev.off()
 
 
 
-# db-RDA pt 5: permutation test for db-RDA explanatory variables (VIF-based model) ####
+# db-RDA pt 6: permutation test for db-RDA explanatory variables (VIF-based model) ####
 
 # test done using 999 permutations with remaining variables as covariates
 # + Benjamini-Hochberg correction
@@ -713,7 +813,7 @@ capture.output(margin.vifmod.dbrda,
                file = "tables/permtest_covariates_mod1_18S.txt",
                append = TRUE)
 
-# db-RDA pt 6: perform db-RDA + envit for monitoring-based model ####
+# db-RDA pt 7: perform db-RDA + envit for monitoring-based model ####
 
 # db-RDA
 set.seed(1)
@@ -733,7 +833,7 @@ envfit.lc.mon <- fortify(
           permutations = 999, display = 'lc')
 )
 
-# db-RDA pt 7: plot db-RDA + envit for monitoring-based model ####
+# db-RDA pt 8: plot db-RDA + envit for monitoring-based model ####
 
 # Note: arbitrary multiplier addded to xend + yend
 # for plotting purposes (could also be handled through scaling)
@@ -778,7 +878,7 @@ vifmod.dbrda.mon.plot <- plot_ordination(rawdata.2.clr,
 vifmod.dbrda.mon.plot
 dev.off()
 
-# db-RDA pt 8: permutation test for db-RDA explanatory variables (monitoring-based model) ####
+# db-RDA pt 9: permutation test for db-RDA explanatory variables (monitoring-based model) ####
 
 set.seed(1)
 margin.vifmod.dbrda.mon <- anova(vifmod.dbrda.mon, by = 'margin', parallel = 4)
