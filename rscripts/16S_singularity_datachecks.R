@@ -52,6 +52,9 @@ lapply(packages, require, character.only = TRUE)
 
 theme_set(theme_classic())
 
+# disable scientific notation
+options(scipen=10000)
+
 # working directory ####
 
 setwd("/home/jharriso/git/seili-metabarcoding/")
@@ -184,8 +187,8 @@ colours <- c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA", "#77AADD",
 raw2.ra.r1 <- tax_glom(raw2.ra, taxrank = rank_names(raw2.ra)[1])
 raw2.ra.r1 <- psmelt(raw2.ra.r1)
 
-Cairo(file = "figures/r_output/FigS2a_16S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/FigS2a_16S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 27, 
       height = 20, 
@@ -241,8 +244,8 @@ rawdata.noNA.noCyano.2.nmds <- ordinate(physeq = rawdata.noNA.noCyano.2.clr,
 
 # nMDS plots ####
 
-Cairo(file = "figures/r_output/FigS3a_16S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/FigS3a_16S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 15, 
       height = 15, 
@@ -268,8 +271,8 @@ nMDS.plot.rawdata.2.clr <- plot_ordination(rawdata.2.clr,
 nMDS.plot.rawdata.2.clr
 dev.off()
 
-Cairo(file = "figures/r_output/FigS3b_16S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/FigS3b_16S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 15, 
       height = 15, 
@@ -293,8 +296,8 @@ nMDS.plot.rawdata.noNA.2.clr <- plot_ordination(rawdata.noNA.2.clr,
 nMDS.plot.rawdata.noNA.2.clr
 dev.off()
 
-Cairo(file = "figures/r_output/FigS3c_16S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/FigS3c_16S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 15, 
       height = 15, 

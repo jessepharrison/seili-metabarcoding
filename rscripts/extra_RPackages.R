@@ -20,6 +20,8 @@ BiocManager::install("DESeq2", lib = libpath, update = FALSE)
 install.packages("ggrepel", lib = libpath)
 devtools::install_github("gavinsimpson/ggvegan", lib = libpath)
 devtools::install_github("jfq3/QsRutils", lib = libpath)
+install.packages("magick", lib = libpath)
+install.packages("rsvg", lib = libpath)
 
 # QsRutils is from:
 # https://github.com/jfq3/QsRutils

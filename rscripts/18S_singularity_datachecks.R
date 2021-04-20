@@ -52,6 +52,9 @@ lapply(packages, require, character.only = TRUE)
 
 theme_set(theme_classic())
 
+# disable scientific notation
+options(scipen=10000)
+
 # working directory ####
 
 setwd("/home/jharriso/git/seili-metabarcoding/")
@@ -153,8 +156,8 @@ colours <- c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA", "#77AADD",
 raw2.ra.r1 <- tax_glom(raw2.ra, taxrank = rank_names(raw2.ra)[1])
 raw2.ra.r1 <- psmelt(raw2.ra.r1)
 
-Cairo(file = "figures/r_output/FigS2b_18S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/FigS2b_18S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 27, 
       height = 20, 
@@ -170,7 +173,7 @@ r1.plot <- ggplot(raw2.ra.r1 ,
   scale_fill_manual(values = colours) +
   scale_y_continuous(name = "Relative abundance (%)") +
   theme(axis.text.y = element_text(size = 12, hjust = 0.5)) +
-  theme(axis.title.y = element_blank()) +
+  theme(axis.title.y = element_text(size = 14)) +
   theme(axis.title.x = element_blank()) +
   theme(axis.text.x = element_text(size = 12, angle = 30, vjust = 0.5, hjust = 0.5)) +
   theme(axis.ticks.x = element_blank()) +
@@ -181,6 +184,7 @@ r1.plot <- ggplot(raw2.ra.r1 ,
 
 r1.plot
 dev.off()
+
 # CLR transformation ####
 
 # CLR transformation (microbiome package) for data using 5% prevalence filter
@@ -204,8 +208,8 @@ rawdata.noNA.2.nmds <- ordinate(physeq = rawdata.noNA.2.clr,
 
 # nMDS plots ####
 
-Cairo(file = "figures/r_output/FigS3d_18S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/FigS3d_18S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 15, 
       height = 15, 
@@ -229,8 +233,8 @@ nMDS.plot.rawdata.2.clr <- plot_ordination(rawdata.2.clr,
 nMDS.plot.rawdata.2.clr
 dev.off()
 
-Cairo(file = "figures/r_output/FigS3e_18S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/FigS3e_18S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 15, 
       height = 15, 

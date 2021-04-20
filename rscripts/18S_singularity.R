@@ -52,6 +52,9 @@ lapply(packages, require, character.only = TRUE)
 
 theme_set(theme_classic())
 
+# disable scientific notation
+options(scipen=10000)
+
 # working directory ####
 
 setwd("/home/jharriso/git/seili-metabarcoding/")
@@ -63,8 +66,8 @@ load("rdata/Seili18s.RData")
 
 # rarefaction curve (without rarefying to even depth) ####
 
-Cairo(file = "figures/r_output/FigS1b_18S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/FigS1b_18S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 25, 
       height = 25, 
@@ -82,13 +85,26 @@ rarecurve(t(otu_table(rawdata)),
 
 dev.off()
 
-# alpha diversity and evenness (without rarefying to even depth) ####
+# alpha diversity and Good's coverage (without rarefying to even depth) ####
 
 richness <- estimate_richness(rawdata, measures = c("Observed", "Chao1", "Shannon"))
 richness <- cbind(richness, rawdata@sam_data[,1:2]) # add replicate and site
 write.csv(richness, "tables/richness_rawdata_18S.csv")
 
-# alpha diversity and evenness (rarefied to even depth - for completeness, but not used) ####
+# Good's coverage
+
+psotu2veg <- function(physeq) {
+   OTU <- otu_table(physeq)
+   if (taxa_are_rows(OTU)) {
+      OTU <- t(OTU)
+   }
+   return(as(OTU, "matrix"))
+}
+
+rawdata.df <- psotu2veg(rawdata)
+goods(rawdata.df)
+
+# alpha diversity (rarefied to even depth - for completeness, but not used) ####
 
 # set.seed(1)
 # alpharare <- rarefy_even_depth(rawdata)
@@ -170,13 +186,13 @@ ggplot(prevdt.raw, aes(Prevalence)) +
    geom_histogram()
 
 # how many with 0 seqs?
-prevdt.raw[(Prevalence <= 0), .N] ## [1]
+prevdt.raw[(Prevalence <= 0), .N]
 
 # how many singletons?
-prevdt.raw[(Prevalence <= 1), .N] ## [1]
+prevdt.raw[(Prevalence <= 1), .N]
 
 # how many doubletons?
-prevdt.raw[(Prevalence <= 2), .N] ## [1]
+prevdt.raw[(Prevalence <= 2), .N]
 
 # taxa cumulative sum with prevalence on x axis
 prevcumsum.raw <- prevdt.raw[, .N, by = Prevalence]
@@ -196,8 +212,8 @@ ggplot(prevdt.raw,
 
 # prevalence plot for phyla
 
-Cairo(file = "figures/r_output/FigS4b_18S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/FigS4b_18S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 45, 
       height = 33, 
@@ -242,6 +258,17 @@ prevalenceThreshold.raw <- 0.05 * nsamples(rawdata.1)
 keepTaxa.raw <- rownames(prevdf.raw.phyla)[(prevdf.raw.phyla$Prevalence >= prevalenceThreshold.raw)]
 rawdata.2 <- prune_taxa(keepTaxa.raw, rawdata.1)
 
+# summarise sequence and OTU no.s ####
+
+# no. of sequences
+sample_sums(rawdata.2)
+
+# overall sum of sequences
+sum(sample_sums(rawdata.2))
+
+# no. of taxa
+ntaxa(rawdata.2)
+
 # CLR transformation ####
 
 # CLR transformation (microbiome package) for data using 5% prevalence filter (rawdata.2)
@@ -284,8 +311,8 @@ colours <- c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA",
              "#DD7788", "#CBD588")
 
 # rank 4 bar plot
-Cairo(file = "figures/r_output/Fig4b_18S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/Fig4b_18S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 27, 
       height = 20, 
@@ -347,8 +374,8 @@ metazoa.ra.r6.005 <- subset(metazoa.ra.r6,
 sum(metazoa.ra.r6.005$Abundance)/sum(metazoa.ra.r6$Abundance) # retains 92.3% of original data
 
 # rank 6 bar plot
-Cairo(file = "figures/r_output/Fig5b_18S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/Fig5b_18S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 27, 
       height = 20, 
@@ -432,8 +459,8 @@ rawdata.2.nmds <- ordinate(physeq = rawdata.2.clr,
                            method = "NMDS", 
                            distance = "euclidean") # stress = 0.16
 
-Cairo(file = "figures/r_output/Fig3b_18S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/Fig3b_18S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 15, 
       height = 15, 
@@ -553,8 +580,8 @@ multcompLetters(extract_p(betaHSD$group))
 
 # manual box plot
 
-Cairo(file = "figures/r_output/FigS5_18S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/Fig6_18S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 15, 
       height = 15, 
@@ -639,7 +666,7 @@ viftest.res3.drop1 <- drop1(viftest.res3, test = "perm")
 # save db-RDA test 3 output
 
 cat(" ------------------------------------",
-    "\n", "16S - test model 3", "\n",
+    "\n", "18S - test model 3", "\n",
     "------------------------------------",
     "\n", "\n",
     file = "stats/vifs_testmodels_18S.txt")
@@ -683,7 +710,7 @@ viftest.res5.drop1 <- drop1(viftest.res5, test = "perm")
 
 cat("\n",
     "------------------------------------",
-    "\n", "16S - test model 5", "\n",
+    "\n", "18S - test model 5", "\n",
     "------------------------------------",
     "\n", "\n",
     file = "stats/vifs_testmodels_18S.txt",
@@ -749,8 +776,8 @@ envfit.lc <- fortify(
 # c) 16S, Monitoring-based model (16S script)
 # d) 18S, Monitoring-based model (this script)
 
-Cairo(file = "figures/r_output/Fig6b_18S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/Fig7b_18S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 20, 
       height = 20, 
@@ -793,6 +820,21 @@ dev.off()
 
 
 # db-RDA pt 6: permutation test for db-RDA explanatory variables (VIF-based model) ####
+
+# global test (999 permutations)
+dbrda.glob <- anova(vifmod.dbrda, permutations = 999)
+
+# save test results
+
+cat(" -------------------------------------------------------------------",
+    "\n", "18S - model 1 - global test", "\n",
+    "-------------------------------------------------------------------",
+    "\n", "\n",
+    file = "tables/permtest_global_mod1_18S.txt")
+
+capture.output(dbrda.glob, 
+               file = "stats/permtest_global_mod1_18S.txt",
+               append = TRUE)
 
 # test done using 999 permutations with remaining variables as covariates
 # + Benjamini-Hochberg correction
@@ -838,8 +880,8 @@ envfit.lc.mon <- fortify(
 # Note: arbitrary multiplier addded to xend + yend
 # for plotting purposes (could also be handled through scaling)
 
-Cairo(file = "figures/r_output/Fig6d_18S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/Fig7d_18S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 20, 
       height = 20, 
@@ -879,6 +921,21 @@ vifmod.dbrda.mon.plot
 dev.off()
 
 # db-RDA pt 9: permutation test for db-RDA explanatory variables (monitoring-based model) ####
+
+# global test (999 permutations)
+dbrda.glob.mon <- anova(vifmod.dbrda.mon, permutations = 999)
+
+# save test results
+
+cat(" -------------------------------------------------------------------",
+    "\n", "18S - model 2 - global test", "\n",
+    "-------------------------------------------------------------------",
+    "\n", "\n",
+    file = "tables/permtest_global_mod2_18S.txt")
+
+capture.output(dbrda.glob.mon, 
+               file = "stats/permtest_global_mod2_18S.txt",
+               append = TRUE)
 
 set.seed(1)
 margin.vifmod.dbrda.mon <- anova(vifmod.dbrda.mon, by = 'margin', parallel = 4)

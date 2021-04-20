@@ -52,6 +52,9 @@ lapply(packages, require, character.only = TRUE)
 
 theme_set(theme_classic())
 
+# disable scientific notation
+options(scipen=10000)
+
 # working directory ####
 
 setwd("/home/jharriso/git/seili-metabarcoding/")
@@ -63,8 +66,8 @@ load("rdata/Seili16s.RData")
 
 # rarefaction curve (without rarefying to even depth) ####
 
-Cairo(file = "figures/r_output/FigS1a_16S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/FigS1a_16S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 25, 
       height = 25, 
@@ -82,13 +85,26 @@ rarecurve(t(otu_table(rawdata)),
 
 dev.off()
 
-# alpha diversity and evenness (without rarefying to even depth) ####
+# alpha diversity and Good's coverage (without rarefying to even depth) ####
 
 richness <- estimate_richness(rawdata, measures = c("Observed", "Chao1", "Shannon"))
 richness <- cbind(richness, rawdata@sam_data[,1:2]) # add replicate and site
 write.csv(richness, "tables/richness_rawdata_16S.csv")
 
-# alpha diversity and evenness (rarefied to even depth - for completeness, but not used) ####
+# Good's coverage
+
+psotu2veg <- function(physeq) {
+  OTU <- otu_table(physeq)
+  if (taxa_are_rows(OTU)) {
+    OTU <- t(OTU)
+  }
+  return(as(OTU, "matrix"))
+}
+
+rawdata.df <- psotu2veg(rawdata)
+goods(rawdata.df)
+
+# alpha diversity (rarefied to even depth - for completeness, but not used) ####
 
 # set.seed(1)
 # alpharare <- rarefy_even_depth(rawdata)
@@ -187,13 +203,13 @@ ggplot(prevdt.raw, aes(Prevalence)) +
   geom_histogram()
 
 # how many with 0 seqs?
-prevdt.raw[(Prevalence <= 0), .N] ## [1] 0
+prevdt.raw[(Prevalence <= 0), .N]
 
 # how many singletons?
-prevdt.raw[(Prevalence <= 1), .N] ## [1] 180
+prevdt.raw[(Prevalence <= 1), .N]
 
 # how many doubletons?
-prevdt.raw[(Prevalence <= 2), .N] ## [1] 410
+prevdt.raw[(Prevalence <= 2), .N]
 
 # taxa cumulative sum with prevalence on x axis
 prevcumsum.raw <- prevdt.raw[, .N, by = Prevalence]
@@ -213,8 +229,8 @@ ggplot(prevdt.raw,
 
 # prevalence plot for phyla
 
-Cairo(file = "figures/r_output/FigS4a_16S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/FigS4a_16S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 45, 
       height = 33, 
@@ -259,6 +275,17 @@ prevalenceThreshold.raw <- 0.05 * nsamples(rawdata.1)
 keepTaxa.raw <- rownames(prevdf.raw.phyla)[(prevdf.raw.phyla$Prevalence >= prevalenceThreshold.raw)]
 rawdata.2 <- prune_taxa(keepTaxa.raw, rawdata.1)
 
+# summarise sequence and OTU no.s ####
+
+# no. of sequences
+sample_sums(rawdata.2)
+
+# overall sum of sequences
+sum(sample_sums(rawdata.2))
+
+# no. of taxa
+ntaxa(rawdata.2)
+
 # CLR transformation ####
 
 # CLR transformation (microbiome package) for data using 5% prevalence filter (rawdata.2)
@@ -299,8 +326,8 @@ colours <- c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA",
              "#DD7788", "#CBD588")
 
 # phylum-level bar plot
-Cairo(file = "figures/r_output/Fig4a_16S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/Fig4a_16S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 27, 
       height = 20, 
@@ -348,8 +375,8 @@ raw2.ra.class.03 <- subset(raw2.ra.class,
 # % remaining after removing OTUs <3%
 sum(raw2.ra.class.03$Abundance)/sum(raw2.ra.class$Abundance) # retains 55.7% of original data
 
-Cairo(file = "figures/r_output/FigS6_16S.png", 
-      type = "png", units = "cm", 
+Cairo(file = "figures/r_output/FigS5_16S.tiff", 
+      type = "tiff", units = "cm", 
       width = 27, 
       height = 20, 
       pointsize = 14, 
@@ -382,7 +409,19 @@ class.plot <- ggplot(raw2.ra.class.03,
 class.plot
 dev.off()
 
-# stacked taxon composition plot for five most abundant phyla (minus Proteobacteria) ####
+# phylum-level min and max abundances (Hellinger-transformed data) ####
+
+phylum.minmax <- raw2.ra.phylum %>%
+  group_by(Rank2) %>%
+  summarise(min = min(Abundance),
+            max = max(Abundance),
+            diff = max - min) %>%
+  arrange(max)
+
+phylum.minmax <- as.data.frame(phylum.minmax)
+phylum.minmax
+
+# stacked taxon composition plot for four most abundant phyla (minus Proteobacteria) ####
 
 # remove Proteobacteria
 # note that we are using Hellinger-transformed data here
@@ -394,13 +433,13 @@ minusproteo <- tax_glom(raw2.ra,
 
 minusproteo <- subset_taxa(minusproteo, Rank2 != "Proteobacteria")
 
-# subset to top 5 phyla
+# subset to top 4 phyla
 
-top5ph <- sort(tapply(taxa_sums(minusproteo), 
+top4ph <- sort(tapply(taxa_sums(minusproteo), 
                       tax_table(minusproteo)[, "Rank2"], sum), 
-               decreasing = TRUE)[1:5]
+               decreasing = TRUE)[1:4]
 
-minusproteo <- subset_taxa(minusproteo, Rank2 %in% names(top5ph))
+minusproteo <- subset_taxa(minusproteo, Rank2 %in% names(top4ph))
 
 # convert to data frame, convert phyla to factors
 # reorder the factors for plotting
@@ -410,16 +449,15 @@ minusproteo$Rank2 <- factor(minusproteo$Rank2,
                             levels = c("Bacteroidetes",
                                        "Planctomycetes",
                                        "Acidobacteria",
-                                       "Chloroflexi", 
-                                       "Ignavibacteriae"))
+                                       "Chloroflexi"))
 
 # plot the data
 
 scaleFUN <- function(x) sprintf("%.2f", x) # for rounding y axis to two decimals
 
 # top five phyla bar plot
-Cairo(file = "figures/r_output/Fig5a_16S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/Fig5a_16S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 19, 
       height = 19, 
@@ -427,7 +465,7 @@ Cairo(file = "figures/r_output/Fig5a_16S.png",
       dpi = 300, 
       bg= "white")
 
-fivephyla.plot <- ggplot(minusproteo, 
+fourphyla.plot <- ggplot(minusproteo, 
                          aes(x = Replicate, y = Abundance, fill = Rank2)) + 
   geom_bar(stat = "identity", position = "stack") +
   facet_grid(Rank2 ~ Site, scales = "free_y") +
@@ -447,7 +485,7 @@ fivephyla.plot <- ggplot(minusproteo,
   theme(legend.position = "bottom") +
   theme(legend.position = "none")
 
-fivephyla.plot
+fourphyla.plot
 dev.off()
 
 #   scale_y_continuous(name = "Relative abundance (%)", labels = scaleFUN)
@@ -460,8 +498,8 @@ rawdata.2.nmds <- ordinate(physeq = rawdata.2.clr,
                            method = "NMDS", 
                            distance = "euclidean") # stress = 0.04
 
-Cairo(file = "figures/r_output/Fig3a_16S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/Fig3a_16S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 15, 
       height = 15, 
@@ -783,8 +821,8 @@ envfit.lc <- fortify(
 # c) 16S, Monitoring-based model (this script)
 # d) 18S, Monitoring-based model (18S script)
 
-Cairo(file = "figures/r_output/Fig6a_16S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/Fig7a_16S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 20, 
       height = 20, 
@@ -825,7 +863,22 @@ vifmod.dbrda.plot <- plot_ordination(rawdata.2.clr,
 vifmod.dbrda.plot
 dev.off()
 
-# db-RDA pt 6: permutation test for db-RDA explanatory variables (VIF-based model) ####
+# db-RDA pt 6: permutation test for db-RDA, global test + test for explanatory variables (VIF-based model) ####
+
+# global test (999 permutations)
+dbrda.glob <- anova(vifmod.dbrda, permutations = 999)
+
+# save test results
+
+cat(" -------------------------------------------------------------------",
+    "\n", "16S - model 1 - global test", "\n",
+    "-------------------------------------------------------------------",
+    "\n", "\n",
+    file = "tables/permtest_global_mod1_16S.txt")
+
+capture.output(dbrda.glob, 
+               file = "stats/permtest_global_mod1_16S.txt",
+               append = TRUE)
 
 # test done using 999 permutations with remaining variables as covariates
 # + Benjamini-Hochberg correction
@@ -976,8 +1029,8 @@ envfit.lc.mon <- fortify(
 # Note: arbitrary multiplier addded to xend + yend
 # for plotting purposes (could also be handled through scaling)
 
-Cairo(file = "figures/r_output/Fig6c_16S.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/Fig7c_16S.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 20, 
       height = 20, 
@@ -1016,7 +1069,22 @@ vifmod.dbrda.mon.plot <- plot_ordination(rawdata.2.clr,
 vifmod.dbrda.mon.plot
 dev.off()
 
-# db-RDA pt 10: permutation test for db-RDA explanatory variables (monitoring-based model) ####
+# db-RDA pt 10: permutation test for db-RDA, global test + test for explanatory variables (monitoring-based model) ####
+
+# global test (999 permutations)
+dbrda.glob.mon <- anova(vifmod.dbrda.mon, permutations = 999)
+
+# save test results
+
+cat(" -------------------------------------------------------------------",
+    "\n", "16S - model 2 - global test", "\n",
+    "-------------------------------------------------------------------",
+    "\n", "\n",
+    file = "tables/permtest_global_mod2_16S.txt")
+
+capture.output(dbrda.glob.mon, 
+               file = "stats/permtest_global_mod2_16S.txt",
+               append = TRUE)
 
 set.seed(1)
 margin.vifmod.dbrda.mon <- anova(vifmod.dbrda.mon, by = 'margin', parallel = 4)

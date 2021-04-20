@@ -2,7 +2,7 @@
  POROSITY-CORRECTED ENV DATA - PCA SUMMARY 
  ------------------------------------ 
 Importance of components:
-                          PC1    PC2    PC3     PC4     PC5       PC6
-Standard deviation     3.1753 2.0155 1.6054 0.97621 0.57008 4.348e-15
-Proportion of Variance 0.5601 0.2257 0.1432 0.05294 0.01805 0.000e+00
-Cumulative Proportion  0.5601 0.7858 0.9290 0.98195 1.00000 1.000e+00
+                          PC1    PC2    PC3     PC4     PC5                  PC6
+Standard deviation     3.1753 2.0155 1.6054 0.97621 0.57008 0.000000000000004348
+Proportion of Variance 0.5601 0.2257 0.1432 0.05294 0.01805 0.000000000000000000
+Cumulative Proportion  0.5601 0.7858 0.9290 0.98195 1.00000 1.000000000000000000

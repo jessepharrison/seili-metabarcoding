@@ -1,7 +1,6 @@
 # Seili metabarcoding study - PCA for environmental variables
 # jesse harrison 2020-2021
 # using seili-r Singularity container (based on seili-r.def)
-
 # additional libpath ####
 # (see extra_RPackages.R for extra package installs)
 
@@ -53,6 +52,9 @@ lapply(packages, require, character.only = TRUE)
 
 theme_set(theme_classic())
 
+# disable scientific notation
+options(scipen=10000)
+
 # working directory ####
 
 setwd("/home/jharriso/git/seili-metabarcoding/")
@@ -98,8 +100,8 @@ pca.loadings <- data.frame(envdata.pca$rotation,
 
 # plot the PCA loadings ####
 
-Cairo(file = "figures/r_output/Fig2.png", 
-      type = "png", 
+Cairo(file = "figures/r_output/Fig2.tiff", 
+      type = "tiff", 
       units = "cm", 
       width = 20, 
       height = 20, 
