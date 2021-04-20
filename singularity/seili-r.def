@@ -2,7 +2,16 @@ Bootstrap: docker
 From: ubuntu:18.04
 
 %labels
-Author Jesse Harrison <jesse.harrison@csc.fi>
+
+  licensing_info="/usr/licensing.txt" 
+  maintainer=Jesse Harrison <jesse.harrison@csc.fi>
+
+%files
+
+## License information files
+
+  licensing.txt /usr/licensing.txt
+  intel-simplified-software-license.txt /usr/intel-simplified-software-license.txt
 
 %post
     
