@@ -422,7 +422,7 @@ figS4 <- image_annotate(figS4, text = "b)",
 gc()
 
 # crop the bottom white space
-figS4 <- image_crop(figS4, "5315x7800")
+figS4 <- image_crop(figS4, "5315x8000")
 
 # export the figure
 image_write(figS4, path = "figures/r_output/combined_figs/figS4.tiff", 
