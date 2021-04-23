@@ -136,7 +136,7 @@ pca.plot <- ggplot(pca.loadings,
                                                     l = 0))) +
   scale_fill_discrete(name = "names", 
                       labels = c(expression(bold("C_1cm:") ~ "sediment C"[{"org"}]* " content, top 1 cm (% dry mass)"),
-                                 expression(bold("CN_1cm:") ~ "Sediment C"[{"org"}]* ":N"[{"tot"}]* " ratio, top 1 cm (mol:mol)"),
+                                 expression(bold("CN_1cm:") ~ "sediment C"[{"org"}]* ":N"[{"tot"}]* " ratio, top 1 cm (mol:mol)"),
                                  expression(bold("Depth:") ~ "water column depth (m)"),
                                  expression(bold("Farm:") ~ "distance to the farm (km)"),
                                  expression(bold("Grain:") ~ "sediment median grain size (μm)"),
@@ -152,7 +152,7 @@ pca.plot <- ggplot(pca.loadings,
                                  expression(bold("P_Inv:") ~ "porewater P inventory (μmol cm"^{"-2"}*")"),
                                  expression(bold("Sal_BW:") ~ "water column salinity (no unit)"),
                                  expression(bold("Temp_BW:") ~ "water column temperature (°C)"),
-                                 expression(bold("X13C_1cm:") ~ "sediment δ^13 C"[{"org"}]* ", top 1 cm (Δ PDB)")
+                                 expression(bold("X13C_1cm:") ~ "sediment δ"^13* "C"[{"org"}]* ", top 1 cm (Δ PDB)")
                                  )) + 
   theme(legend.text=element_text(size = 12)) +
   theme(legend.text.align = 0)
