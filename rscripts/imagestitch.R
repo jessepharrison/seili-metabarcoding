@@ -54,6 +54,19 @@ theme_set(theme_classic())
 setwd("~/git/seili-metabarcoding/")
 
 # note: running gc() several times to clear cache ####
+# fig 2 ####
+
+# read in the file and trim it
+fig2 <- image_read('figures/r_output/Fig2.tiff')
+fig2 <- image_trim(fig2)
+
+# export the figure
+image_write(fig2, path = "figures/r_output/Fig2.tiff", 
+            format = "tiff", quality = 100)
+
+# clear up the env
+gc()
+
 # fig 3 ####
 
 # read in the files

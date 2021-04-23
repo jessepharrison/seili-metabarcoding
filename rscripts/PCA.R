@@ -103,7 +103,7 @@ pca.loadings <- data.frame(envdata.pca$rotation,
 Cairo(file = "figures/r_output/Fig2.tiff", 
       type = "tiff", 
       units = "cm", 
-      width = 20, 
+      width = 35, 
       height = 20, 
       pointsize = 14, 
       dpi = 300, 
@@ -111,7 +111,8 @@ Cairo(file = "figures/r_output/Fig2.tiff",
 
 pca.plot <- ggplot(pca.loadings, 
                    aes(x = PC1,
-                       y = PC2)) +
+                       y = PC2,
+                       fill = names)) +
   geom_point(color = "red") +
   geom_text_repel(aes(label = names),
                   color = "gray45",
@@ -132,7 +133,30 @@ pca.plot <- ggplot(pca.loadings,
   theme(axis.title.x = element_text(margin = margin(t = 10, 
                                                     r = 0, 
                                                     b = 0, 
-                                                    l = 0)))
+                                                    l = 0))) +
+  scale_fill_discrete(name = "names", 
+                      labels = c(expression(bold("C_1cm:") ~ "sediment C"[{"org"}]* " content, top 1 cm (% dry mass)"),
+                                 expression(bold("CN_1cm:") ~ "Sediment C"[{"org"}]* ":N"[{"tot"}]* " ratio, top 1 cm (mol:mol)"),
+                                 expression(bold("Depth:") ~ "water column depth (m)"),
+                                 expression(bold("Farm:") ~ "distance to the farm (km)"),
+                                 expression(bold("Grain:") ~ "sediment median grain size (μm)"),
+                                 expression(bold("HS_Inv:") ~ "porewater H"[2]* "S inventory (μmol cm"^{"-2"}*")"),
+                                 expression(bold("NH4_Inv:") ~ "porewater NH"[4]^{"+"}* " inventory (μmol cm"^{"-2"}*")"),
+                                 expression(bold("NO2_Inv:") ~ "porewater NO"[2]^{"-"}* " inventory (μmol cm"^{"-2"}*")"),
+                                 expression(bold("NOX_BW:") ~ "bottom water NO"[{"x"}]* " concentration (μmol L"^{"-1"}*")"),
+                                 expression(bold("NOX_Inv:") ~ "porewater NO"[{"x"}]* " inventory (μmol cm"^{"-2"}*")"),
+                                 expression(bold("O2_BW:") ~ "bottom water O"[2]* " concentration (µmol L"^{"-1"}*")"),
+                                 expression(bold("O2_Int:") ~ "sediment depth-integrated O"[2]* " consumption rate (μmol"^{"-1"}* " cm"^{"-2"}* " s"^{"-1"}*")"),
+                                 expression(bold("O2_Pen:") ~ "sediment O"[2]* " penetration depth (mm)"),
+                                 expression(bold("P_BW:") ~ "bottom water P concentration (μmol L"^{"-1"}*")"),
+                                 expression(bold("P_Inv:") ~ "porewater P inventory (μmol cm"^{"-2"}*")"),
+                                 expression(bold("Sal_BW:") ~ "water column salinity (no unit)"),
+                                 expression(bold("Temp_BW:") ~ "water column temperature (°C)"),
+                                 expression(bold("X13C_1cm:") ~ "sediment δ^13 C"[{"org"}]* ", top 1 cm (Δ PDB)")
+                                 )) + 
+  theme(legend.text=element_text(size = 12)) +
+  theme(legend.text.align = 0)
 
 pca.plot
+
 dev.off()
