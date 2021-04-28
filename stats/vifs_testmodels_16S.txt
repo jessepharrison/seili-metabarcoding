@@ -2,8 +2,7 @@
  16S - test model 1 
  ------------------------------------ 
  
-Call: capscale(formula = rawdata.2.clr.otus ~ Farm + CN_1cm + IntO2 + NH4_Inv + HS_Inv, data = rawdata.2.clr.samdata.numeric, distance =
-"euclidean")
+Call: capscale(formula = rawdata.2.clr.otus ~ Farm + CN_1cm + IntO2 + NH4_Inv + HS_Inv, data = rawdata.2.clr.samdata.numeric, distance = "euclidean")
 
                 Inertia Proportion Rank
 Total         3380.5054     1.0000     
@@ -42,8 +41,7 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
  16S - test model 2 
  ------------------------------------ 
  
-Call: capscale(formula = rawdata.2.clr.otus ~ Farm + CN_1cm + IntO2 + NH4_Inv, data = rawdata.2.clr.samdata.numeric, distance =
-"euclidean")
+Call: capscale(formula = rawdata.2.clr.otus ~ Farm + CN_1cm + IntO2 + NH4_Inv, data = rawdata.2.clr.samdata.numeric, distance = "euclidean")
 
                 Inertia Proportion Rank
 Total         3380.5054     1.0000     
@@ -81,8 +79,7 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
  16S - test model 3 
  ------------------------------------ 
  
-Call: capscale(formula = rawdata.2.clr.otus ~ Farm + CN_1cm + IntO2 + NH4_Inv + Grain, data = rawdata.2.clr.samdata.numeric, distance =
-"euclidean")
+Call: capscale(formula = rawdata.2.clr.otus ~ Farm + CN_1cm + IntO2 + NH4_Inv + Grain, data = rawdata.2.clr.samdata.numeric, distance = "euclidean")
 
                 Inertia Proportion Rank
 Total         3380.5054     1.0000     
@@ -121,8 +118,7 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
  16S - test model 4 
  ------------------------------------ 
  
-Call: capscale(formula = rawdata.2.clr.otus ~ C_1cm + O2_BW + Temp_BW + NOX_BW + P_BW, data = rawdata.2.clr.samdata.numeric, distance =
-"euclidean")
+Call: capscale(formula = rawdata.2.clr.otus ~ C_1cm + O2_BW + Temp_BW + NOX_BW + P_BW, data = rawdata.2.clr.samdata.numeric, distance = "euclidean")
 
                 Inertia Proportion Rank
 Total         3380.5054     1.0000     
@@ -161,8 +157,7 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
  16S - test model 5 
  ------------------------------------ 
  
-Call: capscale(formula = rawdata.2.clr.otus ~ C_1cm + O2_BW + NOX_BW + P_BW, data = rawdata.2.clr.samdata.numeric, distance =
-"euclidean")
+Call: capscale(formula = rawdata.2.clr.otus ~ C_1cm + O2_BW + NOX_BW + P_BW, data = rawdata.2.clr.samdata.numeric, distance = "euclidean")
 
                 Inertia Proportion Rank
 Total         3380.5054     1.0000     

@@ -1,4 +1,6 @@
-# Seili 16S analysis - jesse harrison 2020-2021
+# haverö metabarcoding study - 16S analysis
+# jesse harrison 2020-2021
+
 # using seili-r Singularity container (based on seili-r.def)
 # additional libpath ####
 # (see extra_RPackages.R for extra package installs)
@@ -12,41 +14,6 @@ packages <- c("phyloseq", "ggplot2", "vegan", "grid", "gridExtra", "data.table",
               "QsRutils", "dplyr", "ggvegan")
 
 lapply(packages, require, character.only = TRUE)
-
-# sessioninfo ####
-
-# R version 4.0.2 (2020-06-22)
-# Platform: x86_64-pc-linux-gnu (64-bit)
-# Running under: Ubuntu 18.04.5 LTS
-
-# Matrix products: default
-# BLAS/LAPACK: /opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/lib/intel64_lin/libmkl_gf_lp64.so
-
-# locale:
-#  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8   
-#  [6] LC_MESSAGES=C.UTF-8    LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C           LC_TELEPHONE=C        
-# [11] LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
-
-# attached base packages:
-#  [1] grid      stats     graphics  grDevices utils     datasets  methods   base     
-
-# other attached packages:
-#  [1] multcompView_0.1-8   Cairo_1.5-12.2       RColorBrewer_1.1-2   knitr_1.30           microbiome_1.12.0    RVAideMemoire_0.9-78
-#  [7] cowplot_1.1.0        plyr_1.8.6           data.table_1.13.2    gridExtra_2.3        vegan_2.5-7          lattice_0.20-41     
-# [13] permute_0.9-5        ggplot2_3.3.2        phyloseq_1.34.0     
-
-# loaded via a namespace (and not attached):
-#  [1] Rcpp_1.0.5          ape_5.4-1           tidyr_1.1.2         prettyunits_1.1.1   Biostrings_2.58.0   digest_0.6.27      
-#  [7] foreach_1.5.1       R6_2.5.0            stats4_4.0.2        pillar_1.4.7        zlibbioc_1.36.0     rlang_0.4.9        
-# [13] progress_1.2.2      rstudioapi_0.13     S4Vectors_0.28.0    Matrix_1.2-18       labeling_0.4.2      splines_4.0.2      
-# [19] Rtsne_0.15          stringr_1.4.0       igraph_1.2.6        munsell_0.5.0       tinytex_0.27        compiler_4.0.2     
-# [25] xfun_0.19           pkgconfig_2.0.3     BiocGenerics_0.36.0 multtest_2.46.0     mgcv_1.8-33         biomformat_1.18.0  
-# [31] tidyselect_1.1.0    tibble_3.0.4        IRanges_2.24.0      codetools_0.2-18    crayon_1.3.4        dplyr_1.0.2        
-# [37] withr_2.3.0         MASS_7.3-53         rhdf5filters_1.2.0  nlme_3.1-150        jsonlite_1.7.1      gtable_0.3.0       
-# [43] lifecycle_0.2.0     magrittr_2.0.1      scales_1.1.1        stringi_1.5.3       farver_2.0.3        XVector_0.30.0     
-# [49] reshape2_1.4.4      ellipsis_0.3.1      generics_0.1.0      vctrs_0.3.5         Rhdf5lib_1.12.0     iterators_1.0.13   
-# [55] tools_4.0.2         ade4_1.7-16         Biobase_2.50.0      glue_1.4.2          purrr_0.3.4         hms_0.5.3          
-# [61] parallel_4.0.2      survival_3.2-7      colorspace_2.0-0    rhdf5_2.34.0        cluster_2.1.0
 
 # ggplot2 theme ####
 
@@ -89,7 +56,7 @@ dev.off()
 
 richness <- estimate_richness(rawdata, measures = c("Observed", "Chao1", "Shannon"))
 richness <- cbind(richness, rawdata@sam_data[,1:2]) # add replicate and site
-write.csv(richness, "tables/richness_rawdata_16S.csv")
+write.csv(richness, "stats/richness_rawdata_16S.csv")
 
 # Good's coverage
 
@@ -292,14 +259,13 @@ ntaxa(rawdata.2)
 
 rawdata.2.clr <- transform(rawdata.2, 'clr')
 
-# stacked taxon composition plots for %RA data (Hellinger transformation) ####
+# stacked taxon composition plots for %RA data ####
 
 # taxon composition plots showed as proportions (%) for readability
-# note: here not using CLR-transformed data but Hellinger (for visualisation)
+# note: here not using CLR-transformed data
 
-# Hellinger transformation + relative abundance conversion
-raw2.ra <- microbiome::transform(rawdata.2, 'hellinger')
-raw2.ra <- transform_sample_counts(raw2.ra, 
+# relative abundance conversion
+raw2.ra <- transform_sample_counts(rawdata.2, 
                                    function(x) x/sum(x))
 
 # subset the data to phylum level (= rank2), cut out low-abundance taxa
@@ -316,7 +282,7 @@ raw2.ra.phylum.02 <- subset(raw2.ra.phylum,
                             Abundance > 0.02)
 
 # % retained after removing OTUs < 2%
-sum(raw2.ra.phylum.02$Abundance)/sum(raw2.ra.phylum$Abundance) # 86.7%
+sum(raw2.ra.phylum.02$Abundance)/sum(raw2.ra.phylum$Abundance) # 89.7%
 
 # define colour palette
 colours <- c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA",
@@ -373,7 +339,7 @@ raw2.ra.class.03 <- subset(raw2.ra.class,
                            Abundance > 0.03)
 
 # % remaining after removing OTUs <3%
-sum(raw2.ra.class.03$Abundance)/sum(raw2.ra.class$Abundance) # retains 55.7% of original data
+sum(raw2.ra.class.03$Abundance)/sum(raw2.ra.class$Abundance) # retains 70.3% of original data
 
 Cairo(file = "figures/r_output/FigS5_16S.tiff", 
       type = "tiff", units = "cm", 
@@ -409,7 +375,7 @@ class.plot <- ggplot(raw2.ra.class.03,
 class.plot
 dev.off()
 
-# phylum-level min and max abundances (Hellinger-transformed data) ####
+# phylum-level min and max abundances ####
 
 phylum.minmax <- raw2.ra.phylum %>%
   group_by(Rank2) %>%
@@ -424,7 +390,6 @@ phylum.minmax
 # stacked taxon composition plot for four most abundant phyla (minus Proteobacteria) ####
 
 # remove Proteobacteria
-# note that we are using Hellinger-transformed data here
 
 minusproteo <- tax_glom(raw2.ra, 
                         taxrank = rank_names(raw2.ra)[2], 
@@ -433,7 +398,7 @@ minusproteo <- tax_glom(raw2.ra,
 
 minusproteo <- subset_taxa(minusproteo, Rank2 != "Proteobacteria")
 
-# subset to top 4 phyla
+# subset to top 4 phyla (minus Proteobacteria)
 
 top4ph <- sort(tapply(taxa_sums(minusproteo), 
                       tax_table(minusproteo)[, "Rank2"], sum), 
@@ -447,9 +412,9 @@ minusproteo <- subset_taxa(minusproteo, Rank2 %in% names(top4ph))
 minusproteo <- psmelt(minusproteo)
 minusproteo$Rank2 <- factor(minusproteo$Rank2,
                             levels = c("Bacteroidetes",
-                                       "Planctomycetes",
                                        "Acidobacteria",
-                                       "Chloroflexi"))
+                                       "Chloroflexi",
+                                       "Ignavibacteriae"))
 
 # plot the data
 
@@ -487,8 +452,6 @@ fourphyla.plot <- ggplot(minusproteo,
 
 fourphyla.plot
 dev.off()
-
-#   scale_y_continuous(name = "Relative abundance (%)", labels = scaleFUN)
 
 # nMDS for CLR-transformed data ####
 
@@ -874,7 +837,7 @@ cat(" -------------------------------------------------------------------",
     "\n", "16S - model 1 - global test", "\n",
     "-------------------------------------------------------------------",
     "\n", "\n",
-    file = "tables/permtest_global_mod1_16S.txt")
+    file = "stats/permtest_global_mod1_16S.txt")
 
 capture.output(dbrda.glob, 
                file = "stats/permtest_global_mod1_16S.txt",
@@ -893,10 +856,10 @@ cat(" -------------------------------------------------------------------",
     "\n", "16S - model 1 - permutation test with remaining vars as covariates", "\n",
     "-------------------------------------------------------------------",
     "\n", "\n",
-    file = "tables/permtest_covariates_mod1_16S.txt")
+    file = "stats/permtest_covariates_mod1_16S.txt")
 
 capture.output(margin.vifmod.dbrda, 
-               file = "tables/permtest_covariates_mod1_16S.txt",
+               file = "stats/permtest_covariates_mod1_16S.txt",
                append = TRUE)
 
 # db-RDA pt 7: VIFs for monitoring-based model ####
@@ -1080,7 +1043,7 @@ cat(" -------------------------------------------------------------------",
     "\n", "16S - model 2 - global test", "\n",
     "-------------------------------------------------------------------",
     "\n", "\n",
-    file = "tables/permtest_global_mod2_16S.txt")
+    file = "stats/permtest_global_mod2_16S.txt")
 
 capture.output(dbrda.glob.mon, 
                file = "stats/permtest_global_mod2_16S.txt",
@@ -1096,8 +1059,8 @@ cat(" -------------------------------------------------------------------",
     "\n", "16S - model 2 - permutation test with remaining vars as covariates", "\n",
     "-------------------------------------------------------------------",
     "\n", "\n",
-    file = "tables/permtest_covariates_mod2_16S.txt")
+    file = "stats/permtest_covariates_mod2_16S.txt")
 
 capture.output(margin.vifmod.dbrda.mon, 
-               file = "tables/permtest_covariates_mod2_16S.txt",
+               file = "stats/permtest_covariates_mod2_16S.txt",
                append = TRUE)

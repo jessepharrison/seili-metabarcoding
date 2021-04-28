@@ -1,5 +1,6 @@
-# Seili metabarcoding study - PCA for environmental variables
+# haverö metabarcoding study - PCA for environmental variables
 # jesse harrison 2020-2021
+
 # using seili-r Singularity container (based on seili-r.def)
 # additional libpath ####
 # (see extra_RPackages.R for extra package installs)
@@ -9,7 +10,7 @@
 # packages ####
 
 packages <- c("vegan", "data.table", "ggplot2", 
-              "Cairo", "ggrepel")
+              "Cairo", "ggrepel", "colorspace")
 
 lapply(packages, require, character.only = TRUE)
 
@@ -98,7 +99,33 @@ capture.output(pca.summary,
 pca.loadings <- data.frame(envdata.pca$rotation,
                            names = row.names(envdata.pca$rotation))
 
+
+# add a column with with model groupings ####
+
+groups <- c("Included in Model 1", 
+            "No model", 
+            "No model", 
+            "No model", 
+            "Included in Model 1", 
+            "No model", 
+            "Included in Model 2", 
+            "Included in Model 2", 
+            "No model", 
+            "Included in Model 1", 
+            "No model", 
+            "Included in Model 1", 
+            "No model", 
+            "No model", 
+            "No model", 
+            "Included in Model 1", 
+            "Included in Model 2", 
+            "Included in Model 2")
+
+pca.loadings$group <- as.factor(groups)
+
 # plot the PCA loadings ####
+
+# Create the plot
 
 Cairo(file = "figures/r_output/Fig2.tiff", 
       type = "tiff", 
@@ -109,18 +136,20 @@ Cairo(file = "figures/r_output/Fig2.tiff",
       dpi = 300, 
       bg = "white")
 
+scale_colour_discrete <- scale_colour_viridis_d
+
 pca.plot <- ggplot(pca.loadings, 
                    aes(x = PC1,
                        y = PC2,
-                       fill = names)) +
-  geom_point(color = "red") +
+                       fill = names,
+                       colour = group)) +
+  geom_point(size = 3) +
   geom_text_repel(aes(label = names),
                   color = "gray45",
                   min.segment.length = 0, 
                   seed = 42, 
                   box.padding = 0.6,
                   size = 5) + 
-  scale_colour_manual(values = "black.palette") +
   coord_fixed(ratio = 1) +
   xlim(-0.5, 0.5) +
   ylim(-0.5, 0.5) +
@@ -134,7 +163,7 @@ pca.plot <- ggplot(pca.loadings,
                                                     r = 0, 
                                                     b = 0, 
                                                     l = 0))) +
-  scale_fill_discrete(name = "names", 
+  scale_fill_discrete(name = "names",
                       labels = c(expression(bold("C_1cm:") ~ "sediment C"[{"org"}]* " content, top 1 cm (% dry mass)"),
                                  expression(bold("CN_1cm:") ~ "sediment C"[{"org"}]* ":N"[{"tot"}]* " ratio, top 1 cm (mol:mol)"),
                                  expression(bold("Depth:") ~ "water column depth (m)"),
@@ -153,7 +182,11 @@ pca.plot <- ggplot(pca.loadings,
                                  expression(bold("Sal_BW:") ~ "water column salinity (no unit)"),
                                  expression(bold("Temp_BW:") ~ "water column temperature (°C)"),
                                  expression(bold("X13C_1cm:") ~ "sediment δ"^13* "C"[{"org"}]* ", top 1 cm (Δ PDB)")
-                                 )) + 
+                      )) + 
+  scale_colour_discrete_qualitative(breaks = c("Included in Model 1", 
+                                               "Included in Model 2"),
+                                    palette = "Harmonic") +
+  guides(fill = guide_legend(override.aes = list(fill = "black"))) +
   theme(legend.text=element_text(size = 12)) +
   theme(legend.text.align = 0)
 

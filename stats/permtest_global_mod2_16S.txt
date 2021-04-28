@@ -1,3 +1,7 @@
+ ------------------------------------------------------------------- 
+ 16S - model 2 - global test 
+ ------------------------------------------------------------------- 
+ 
 Permutation test for capscale under reduced model
 Permutation: free
 Number of permutations: 999

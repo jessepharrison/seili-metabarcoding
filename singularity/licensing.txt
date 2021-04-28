@@ -1,0 +1,29 @@
+# Singularity container for Haverö metabarcoding study
+# Maintainer: Jesse Harrison (jesse.harrison@csc.fi)
+
+# LICENSE INFORMATION
+
+# This software contains source code provided by NVIDIA Corporation
+# (see this list for details).
+
+# rocker:
+
+The definition file used for this container employs elements based on Docker recipes released by the Rocker Project (https://www.rocker-project.org/). Rocker source code is distributed under the GPL 2.0 license or later:
+
+https://github.com/rocker-org/rocker-versioned/blob/master/LICENSE
+https://github.com/rocker-org/rocker-versioned2/blob/master/LICENSE
+
+# Singularity:
+
+Singularity is released under a standard 3 clause BSD license:
+https://github.com/hpcng/singularity/blob/master/LICENSE.md
+
+# R:
+
+Information on licenses that are in use for R and associated software (including packages) can be found on the R Project website:
+https://www.r-project.org/Licenses/
+
+# RStudio:
+
+The RStudio Server installation used for this container is based on the Open Source Edition (https://rstudio.com/products/rstudio/#rstudio-server) available under the AGPL v3 license: 
+https://github.com/rstudio/rstudio/blob/master/COPYING

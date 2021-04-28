@@ -1,27 +1,21 @@
-# install a few extra R packages
+# haverö metabarcoding study - additional R packages
+# jesse harrison 2020-2021
 
 # set libpath
 .libPaths(c("/home/jharriso/seili-singularity/rpackages", .libPaths()))
 libpath <- .libPaths()[1]
 
+# load packages
+packages <- c("devtools", "BiocManager")
+lapply(packages, require, character.only = TRUE)
+
 # install packages
 install.packages("ggfortify", lib = libpath)
-BiocManager::install("mixOmics", lib = libpath, update = FALSE)
+install("mixOmics", lib = libpath)
 install.packages("RVAideMemoire", lib = libpath)
-
-# DESeq2 wants some packages installed separately
-install.packages("XML", lib = libpath)
-BiocManager::install("annotate", lib = libpath, update = FALSE)
-BiocManager::install("genefilter", lib = libpath, update = FALSE)
-BiocManager::install("geneplotter", lib = libpath, update = FALSE)
-BiocManager::install("DESeq2", lib = libpath, update = FALSE)
-
-# Other packages
+install.packages("colorspace", lib = libpath)
 install.packages("ggrepel", lib = libpath)
-devtools::install_github("gavinsimpson/ggvegan", lib = libpath)
-devtools::install_github("jfq3/QsRutils", lib = libpath)
+install_github("gavinsimpson/ggvegan", lib = libpath)
+install_github("jfq3/QsRutils", lib = libpath)
 install.packages("magick", lib = libpath)
 install.packages("rsvg", lib = libpath)
-
-# QsRutils is from:
-# https://github.com/jfq3/QsRutils
