@@ -1,7 +1,6 @@
 # haverö metabarcoding study - 16S analysis
 # jesse harrison 2020-2021
 
-# using seili-r Singularity container (based on seili-r.def)
 # additional libpath ####
 # (see extra_RPackages.R for extra package installs)
 
