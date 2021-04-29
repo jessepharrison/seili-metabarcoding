@@ -374,10 +374,10 @@ class.plot <- ggplot(raw2.ra.class.03,
 class.plot
 dev.off()
 
-# phylum-level min and max abundances ####
+# phylum-level per-site min and max abundances ####
 
 phylum.minmax <- raw2.ra.phylum %>%
-  group_by(Rank2) %>%
+  group_by(Rank2, Site) %>%
   summarise(min = min(Abundance),
             max = max(Abundance),
             diff = max - min) %>%
@@ -385,6 +385,18 @@ phylum.minmax <- raw2.ra.phylum %>%
 
 phylum.minmax <- as.data.frame(phylum.minmax)
 phylum.minmax
+
+# phylum-level per-site mean abundances ####
+
+stderr <- function(x) sd(x)/sqrt(length(x))
+
+phylum.means <- raw2.ra.phylum %>%
+  group_by(Rank2, Site) %>%
+  summarise(mean = mean(Abundance),
+            se = stderr(Abundance))
+
+phylum.means <- as.data.frame(phylum.means)
+phylum.means
 
 # stacked taxon composition plot for four most abundant phyla (minus Proteobacteria) ####
 
