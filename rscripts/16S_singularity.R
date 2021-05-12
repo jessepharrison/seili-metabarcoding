@@ -195,7 +195,7 @@ ggplot(prevdt.raw,
 
 # prevalence plot for phyla
 
-Cairo(file = "figures/r_output/FigS4a_16S.tiff", 
+Cairo(file = "figures/r_output/FigS3a_16S.tiff", 
       type = "tiff", 
       units = "cm", 
       width = 45, 
@@ -340,7 +340,7 @@ raw2.ra.class.03 <- subset(raw2.ra.class,
 # % remaining after removing OTUs <3%
 sum(raw2.ra.class.03$Abundance)/sum(raw2.ra.class$Abundance) # retains 70.3% of original data
 
-Cairo(file = "figures/r_output/FigS5_16S.tiff", 
+Cairo(file = "figures/r_output/FigS4_16S.tiff", 
       type = "tiff", units = "cm", 
       width = 27, 
       height = 20, 

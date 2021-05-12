@@ -178,7 +178,7 @@ ggplot(prevdt.raw,
 
 # prevalence plot for phyla
 
-Cairo(file = "figures/r_output/FigS4b_18S.tiff", 
+Cairo(file = "figures/r_output/FigS3b_18S.tiff", 
       type = "tiff", 
       units = "cm", 
       width = 45, 

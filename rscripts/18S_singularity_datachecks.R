@@ -110,45 +110,12 @@ raw2.ra <- transform_sample_counts(rawdata.2,
 raw2.noNA.ra <- transform_sample_counts(rawdata.noNA.2, 
                                         function(x) x/sum(x))
 
-# stacked bar plot using %RA data ####
-
-colours <- c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA", "#77AADD", 
-             "#117777", "#44AAAA", "#77CCCC", "#117744", "#44AA77", "#88CCAA", 
-             "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", 
-             "#771122", "#AA4455", "#DD7788", "#DD776655")
+# fractions of classified vs unclassified ####
 
 # subset the data to domain level (= rank1)
 raw2.ra.r1 <- tax_glom(raw2.ra, taxrank = rank_names(raw2.ra)[1])
 raw2.ra.r1 <- psmelt(raw2.ra.r1)
-
-Cairo(file = "figures/r_output/FigS2b_18S.tiff", 
-      type = "tiff", 
-      units = "cm", 
-      width = 27, 
-      height = 20, 
-      pointsize = 14, 
-      dpi = 300, 
-      bg= "white")
-
-r1.plot <- ggplot(raw2.ra.r1 , 
-                  aes(x = Replicate, y = Abundance, fill = Rank1)) + 
-  geom_bar(stat = "identity", 
-           position = "stack") +
-  facet_wrap(~ Site) +
-  scale_fill_manual(values = colours) +
-  scale_y_continuous(name = "Relative abundance (%)") +
-  theme(axis.text.y = element_text(size = 12, hjust = 0.5)) +
-  theme(axis.title.y = element_text(size = 14)) +
-  theme(axis.title.x = element_blank()) +
-  theme(axis.text.x = element_text(size = 12, angle = 30, vjust = 0.5, hjust = 0.5)) +
-  theme(axis.ticks.x = element_blank()) +
-  theme(strip.text.x = element_text(size = 11)) +
-  theme(legend.title = element_blank()) +
-  theme(legend.position = "bottom") +
-  theme(legend.text = element_text(size = 10))
-
-r1.plot
-dev.off()
+raw2.ra.r1
 
 # CLR transformation ####
 
@@ -173,7 +140,7 @@ rawdata.noNA.2.nmds <- ordinate(physeq = rawdata.noNA.2.clr,
 
 # nMDS plots ####
 
-Cairo(file = "figures/r_output/FigS3d_18S.tiff", 
+Cairo(file = "figures/r_output/FigS2d_18S.tiff", 
       type = "tiff", 
       units = "cm", 
       width = 15, 
@@ -198,7 +165,7 @@ nMDS.plot.rawdata.2.clr <- plot_ordination(rawdata.2.clr,
 nMDS.plot.rawdata.2.clr
 dev.off()
 
-Cairo(file = "figures/r_output/FigS3e_18S.tiff", 
+Cairo(file = "figures/r_output/FigS2e_18S.tiff", 
       type = "tiff", 
       units = "cm", 
       width = 15, 
