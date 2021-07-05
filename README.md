@@ -1,8 +1,10 @@
 # Haverö metabarcoding study
 
-Jesse P. Harrison, Panagiota-Myrsini Chronopoulou, Iines S. Salonen, Tom Jilbert and Karoliina A. Koho
+This repository contains material supporting the following publication:
 
-This repository contains: 
+Harrison JP, Chronopoulou P-M, Salonen IS, Jilbert T, Koho KA. (2021) [16S and 18S rRNA gene metabarcoding provide congruent information on the responses of sediment communities to eutrophication](https://www.frontiersin.org/articles/10.3389/fmars.2021.708716/full). Frontiers in Marine Science 8:708716.
+
+The contents include:
 
 - R scripts used for data analysis and package installations (`/rscripts`)
 - phyloseq objects including data processed in micca (`/rdata`)
