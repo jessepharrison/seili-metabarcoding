@@ -6,6 +6,8 @@ This repository contains material supporting the following publication:
 
 Harrison JP, Chronopoulou P-M, Salonen IS, Jilbert T, Koho KA. (2021) [16S and 18S rRNA gene metabarcoding provide congruent information on the responses of sediment communities to eutrophication](https://www.frontiersin.org/articles/10.3389/fmars.2021.708716/full). Frontiers in Marine Science 8:708716.
 
+---
+
 ## Repository contents
 
 The contents include:
@@ -36,24 +38,28 @@ Script for combining and editing figure files
 `extra_RPackages.R`
 Script for additional R package installations
 
+---
+
 ## Reproducing the R environment + analyses used
 
-# 1. Clone the repository and move to the `singularity` folder
+### 1. Clone the repository and move to the `singularity` folder
 
 ```
 git clone https://github.com/jessepharrison/seili-metabarcoding.git
 cd seili-metabarcoding/singularity
 ```
 
-# 2. Build the Singularity container
+### 2. Build the Singularity container
+
+This takes some time - grab yourself a coffee! 
 
 ```
 sudo singularity build seili.sif container.def
-
-# this will take some time.
 ```
 
-# 3. While still in the `singularity` folder, install further R packages
+### 3. Install further R packages
+
+Run the following still in the `singularity` folder:
 
 ```
 singularity exec seili.sif \
@@ -68,11 +74,11 @@ Rscript --no-save ../rscripts/extra_RPackages.R
 # the container is configured to use a MRAN snapshot from 2020-11-29.  
 ```
 
-# 4. Running analysis scripts
+### 4. Running analysis scripts
 
-a) Move back to the repository root (`path/to/seili-metabarcoding`)
+You can now move back to the repository root (`path/to/seili-metabarcoding`).
 
-b) Run scripts non-interactively using `Rscript`, for example:
+The scripts can be run non-interactively using `Rscript`, for example:
 
 ```
 singularity exec singularity/seili.sif \
