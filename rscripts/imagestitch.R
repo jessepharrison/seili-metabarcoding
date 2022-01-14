@@ -1,23 +1,21 @@
 # haverö metabarcoding study - image processing
-# jesse harrison 2020-2021
+# jesse harrison 2020-2022
 
-# additional libpath ####
-# (see extra_RPackages.R for extra package installs)
+# make sure your working directory is the github repository root!
+# (i.e. path/to/seili-metabarcoding)
 
-.libPaths(c("~/seili-singularity/rpackages", .libPaths()))
+# add singularity folder to libpaths
+
+.libPaths(c("singularity", .libPaths()))
 
 # packages ####
 
-packages <- c("magick")
+packages <- c("ggplot2", "magick")
 lapply(packages, require, character.only = TRUE)
 
 # ggplot2 theme ####
 
 theme_set(theme_classic())
-
-# working directory ####
-
-setwd("~/git/seili-metabarcoding/")
 
 # note: running gc() several times to clear cache ####
 # fig 2 ####

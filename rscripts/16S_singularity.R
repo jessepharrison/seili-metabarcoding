@@ -1,10 +1,12 @@
 # haverö metabarcoding study - 16S analysis
-# jesse harrison 2020-2021
+# jesse harrison 2020-2022
 
-# additional libpath ####
-# (see extra_RPackages.R for extra package installs)
+# make sure your working directory is the github repository root!
+# (i.e. path/to/seili-metabarcoding)
 
-.libPaths(c("/home/jharriso/seili-singularity/rpackages", .libPaths()))
+# add singularity folder to libpaths
+
+.libPaths(c("singularity", .libPaths()))
 
 # packages ####
 
@@ -20,10 +22,6 @@ theme_set(theme_classic())
 
 # disable scientific notation
 options(scipen=10000)
-
-# working directory ####
-
-setwd("/home/jharriso/git/seili-metabarcoding/")
 
 # load 16S RData ####
 
@@ -165,8 +163,8 @@ prevdt.raw <- mdt.raw[, list(Prevalence = sum(count > 0),
                              TotalCounts = sum(count)), by = TaxaID]
 
 # draw prevalence plot
-ggplot(prevdt.raw, aes(Prevalence)) + 
-  geom_histogram()
+# ggplot(prevdt.raw, aes(Prevalence)) + 
+#  geom_histogram()
 
 # how many with 0 seqs?
 prevdt.raw[(Prevalence <= 0), .N]
@@ -178,20 +176,20 @@ prevdt.raw[(Prevalence <= 1), .N]
 prevdt.raw[(Prevalence <= 2), .N]
 
 # taxa cumulative sum with prevalence on x axis
-prevcumsum.raw <- prevdt.raw[, .N, by = Prevalence]
-setkey(prevcumsum.raw, Prevalence)
-prevcumsum.raw[, CumSum := cumsum(N)]
-pPrevCumSum.raw = ggplot(prevcumsum.raw, aes(Prevalence, CumSum)) + 
-  geom_point() +
-  xlab("Filtering threshold (prevalence)") +
-  ylab("OTUs filtered")
-pPrevCumSum.raw
+# prevcumsum.raw <- prevdt.raw[, .N, by = Prevalence]
+# setkey(prevcumsum.raw, Prevalence)
+# prevcumsum.raw[, CumSum := cumsum(N)]
+# pPrevCumSum.raw = ggplot(prevcumsum.raw, aes(Prevalence, CumSum)) + 
+#  geom_point() +
+#  xlab("Filtering threshold (prevalence)") +
+#  ylab("OTUs filtered")
+# pPrevCumSum.raw
 
 # prevalence vs. total count scatter plot
-ggplot(prevdt.raw, 
-       aes(Prevalence, TotalCounts)) + 
-  geom_point(size = 4, alpha = 0.75) + 
-  scale_y_log10()
+# ggplot(prevdt.raw, 
+#       aes(Prevalence, TotalCounts)) + 
+#  geom_point(size = 4, alpha = 0.75) + 
+#  scale_y_log10()
 
 # prevalence plot for phyla
 

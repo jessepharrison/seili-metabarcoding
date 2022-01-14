@@ -1,10 +1,12 @@
 # haverö metabarcoding study - 18S analysis
-# jesse harrison 2020-2021
+# jesse harrison 2020-2022
 
-# additional libpath ####
-# (see extra_RPackages.R for extra package installs)
+# make sure your working directory is the github repository root!
+# (i.e. path/to/seili-metabarcoding)
 
-.libPaths(c("/home/jharriso/seili-singularity/rpackages", .libPaths()))
+# add singularity folder to libpaths
+
+.libPaths(c("singularity", .libPaths()))
 
 # packages ####
 
@@ -20,10 +22,6 @@ theme_set(theme_classic())
 
 # disable scientific notation
 options(scipen=10000)
-
-# working directory ####
-
-setwd("/home/jharriso/git/seili-metabarcoding/")
 
 # load 18S RData ####
 
@@ -148,8 +146,8 @@ prevdt.raw <- mdt.raw[, list(Prevalence = sum(count > 0),
                              TotalCounts = sum(count)), by = TaxaID]
 
 # draw prevalence plot
-ggplot(prevdt.raw, aes(Prevalence)) + 
-   geom_histogram()
+# ggplot(prevdt.raw, aes(Prevalence)) + 
+#   geom_histogram()
 
 # how many with 0 seqs?
 prevdt.raw[(Prevalence <= 0), .N]
@@ -161,20 +159,20 @@ prevdt.raw[(Prevalence <= 1), .N]
 prevdt.raw[(Prevalence <= 2), .N]
 
 # taxa cumulative sum with prevalence on x axis
-prevcumsum.raw <- prevdt.raw[, .N, by = Prevalence]
-setkey(prevcumsum.raw, Prevalence)
-prevcumsum.raw[, CumSum := cumsum(N)]
-pPrevCumSum.raw = ggplot(prevcumsum.raw, aes(Prevalence, CumSum)) + 
-   geom_point() +
-   xlab("Filtering threshold (prevalence)") +
-   ylab("OTUs filtered")
-pPrevCumSum.raw
+# prevcumsum.raw <- prevdt.raw[, .N, by = Prevalence]
+# setkey(prevcumsum.raw, Prevalence)
+# prevcumsum.raw[, CumSum := cumsum(N)]
+# pPrevCumSum.raw = ggplot(prevcumsum.raw, aes(Prevalence, CumSum)) + 
+#   geom_point() +
+#   xlab("Filtering threshold (prevalence)") +
+#   ylab("OTUs filtered")
+# pPrevCumSum.raw
 
 # prevalence vs. total count scatter plot
-ggplot(prevdt.raw, 
-       aes(Prevalence, TotalCounts)) + 
-   geom_point(size = 4, alpha = 0.75) + 
-   scale_y_log10()
+# ggplot(prevdt.raw, 
+#       aes(Prevalence, TotalCounts)) + 
+#   geom_point(size = 4, alpha = 0.75) + 
+#   scale_y_log10()
 
 # prevalence plot for phyla
 
@@ -389,11 +387,11 @@ groupvec <- rep(c("S1-S3", "S4-S6"), each = nrow(richness.meta) / 2)
 richness.meta <- cbind(richness.meta, Grouping = groupvec)
 
 # quick distribution check
-ggplot(richness.meta, aes(x = Shannon)) +
-   geom_histogram(color = "black", fill = "white") +
-   facet_wrap(facets = vars(Grouping)) +
-   theme_bw() +
-   theme(text = element_text(size = 16))
+# ggplot(richness.meta, aes(x = Shannon)) +
+#   geom_histogram(color = "black", fill = "white") +
+#   facet_wrap(facets = vars(Grouping)) +
+#   theme_bw() +
+#   theme(text = element_text(size = 16))
 
 # likely best to use a non-parametric test to be on the safe side.
 
@@ -589,14 +587,6 @@ rownames(envdata) <- rownames(sample_data(rawdata.2.clr))
 envdata <- sample_data(envdata)
 rawdata.2.clr <- merge_phyloseq(rawdata.2.clr, envdata)
 
-
-
-
-
-
-
-
-
 # db-RDA pt 3: capscale for 18S models ####
 
 # db-RDA test 3
@@ -722,10 +712,6 @@ envfit.lc <- fortify(
           permutations = 999, display = 'lc')
 )
 
-
-
-
-
 # db-RDA pt 5: plot db-RDA + envfit for VIF-based model ####
 
 # Note: arbitrary multiplier addded to xend + yend
@@ -775,10 +761,6 @@ vifmod.dbrda.plot <- plot_ordination(rawdata.2.clr,
 
 vifmod.dbrda.plot
 dev.off()
-
-
-
-
 
 # db-RDA pt 6: permutation test for db-RDA explanatory variables (VIF-based model) ####
 

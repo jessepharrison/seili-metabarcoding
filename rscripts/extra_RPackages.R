@@ -1,9 +1,10 @@
 # haverö metabarcoding study - additional R packages
-# jesse harrison 2020-2021
+# jesse harrison 2020-2022
 
-# set libpath
-.libPaths(c("/home/jharriso/seili-singularity/rpackages", .libPaths()))
-libpath <- .libPaths()[1]
+# note: run this script from the ´singularity´ folder
+# (i.e. path/to/seili-metabarcoding/singularity)
+ 
+libpath <- getwd()
 
 # load packages
 packages <- c("devtools", "BiocManager")

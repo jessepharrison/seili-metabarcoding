@@ -1,11 +1,12 @@
 # haverö metabarcoding study - PCA for environmental variables
-# jesse harrison 2020-2021
+# jesse harrison 2020-2022
 
-# using seili-r Singularity container (based on seili-r.def)
-# additional libpath ####
-# (see extra_RPackages.R for extra package installs)
+# make sure your working directory is the github repository root!
+# (i.e. path/to/seili-metabarcoding)
 
-.libPaths(c("/home/jharriso/seili-singularity/rpackages", .libPaths()))
+# add singularity folder to libpaths
+
+.libPaths(c("singularity", .libPaths()))
 
 # packages ####
 
@@ -20,10 +21,6 @@ theme_set(theme_classic())
 
 # disable scientific notation
 options(scipen=10000)
-
-# working directory ####
-
-setwd("/home/jharriso/git/seili-metabarcoding/")
 
 # load porosity-corrected environmental data ####
 
