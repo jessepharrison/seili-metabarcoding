@@ -3,9 +3,6 @@
 
 # LICENSE INFORMATION
 
-# This software contains source code provided by NVIDIA Corporation
-# (see this list for details).
-
 # rocker:
 
 The definition file used for this container employs elements based on Docker recipes released by the Rocker Project (https://www.rocker-project.org/). Rocker source code is distributed under the GPL 2.0 license or later:
